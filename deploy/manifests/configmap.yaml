@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-jurisdiction-config
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/part-of: mcp-gateway
+data:
+  appsettings.Production.json: |
+    {
+      "Jurisdiction": {
+        "Enabled": true,
+        "EnforcementMode": "Enforce",
+        "Policy": {
+          "GlobalToolDenylist": [],
+          "DeniedToolCategories": [],
+          "TeamAllowlists": {},
+          "TeamDenylists": {},
+          "RateLimitPerUser": 1000,
+          "RateLimitPerTeam": 10000,
+          "DefaultTimeoutMs": 30000,
+          "MaxRequestPayloadBytes": 10485760,
+          "MaxResponsePayloadBytes": 52428800,
+          "RiskThreshold": 70,
+          "ScanPassThreshold": 50,
+          "RequireAdminForHighRisk": true,
+          "EnforceRegistryOnly": true,
+          "BypassAllowedPrincipals": []
+        },
+        "Scanner": {
+          "Image": "invariantlabs/mcp-scan:latest",
+          "TimeoutSeconds": 600,
+          "Retries": 2,
+          "JobNamespace": "mcp-jurisdiction",
+          "JobServiceAccount": "mcp-jurisdiction-scanner",
+          "CpuRequest": "100m",
+          "MemoryRequest": "256Mi",
+          "CpuLimit": "500m",
+          "MemoryLimit": "512Mi",
+          "EnableDynamicTesting": true,
+          "AnalysisApiUrl": "https://api.invariantlabs.ai/v1"
+        }
+      },
+      "Redis": {
+        "ConnectionString": "redis.mcp-jurisdiction.svc.cluster.local:6379"
+      },
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      }
+    }

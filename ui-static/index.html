@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Jurisdiction - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .badge-approved { background-color: #10b981; color: white; }
+        .badge-pending { background-color: #f59e0b; color: white; }
+        .badge-denied { background-color: #ef4444; color: white; }
+        .badge-suspended { background-color: #6b7280; color: white; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                    <span class="text-white font-bold">M</span>
+                </div>
+                <h1 class="text-xl font-bold text-gray-900">MCP Jurisdiction</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600">Local Dev Mode</span>
+                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <span class="text-gray-600 text-sm">U</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" id="stats">
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Total Servers</div>
+                <div class="text-2xl font-bold" id="stat-total">-</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Approved</div>
+                <div class="text-2xl font-bold text-green-600" id="stat-approved">-</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Pending</div>
+                <div class="text-2xl font-bold text-yellow-600" id="stat-pending">-</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="text-sm text-gray-500">Denied/Suspended</div>
+                <div class="text-2xl font-bold text-red-600" id="stat-denied">-</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="border-b">
+                <nav class="flex space-x-4 px-4" id="tabs">
+                    <button onclick="showTab('servers')" class="tab-btn py-3 px-2 border-b-2 border-blue-600 text-blue-600 font-medium" data-tab="servers">
+                        Servers
+                    </button>
+                    <button onclick="showTab('audit')" class="tab-btn py-3 px-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="audit">
+                        Audit Log
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Servers Tab -->
+            <div id="tab-servers" class="p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex space-x-2">
+                        <input type="text" id="search" placeholder="Search servers..." 
+                               class="px-3 py-2 border rounded-lg w-64" onkeyup="filterServers()">
+                        <select id="status-filter" class="px-3 py-2 border rounded-lg" onchange="filterServers()">
+                            <option value="">All Status</option>
+                            <option value="Approved">Approved</option>
+                            <option value="PendingScan">Pending Scan</option>
+                            <option value="ScannedPass">Scanned (Pass)</option>
+                            <option value="ScannedFail">Scanned (Fail)</option>
+                            <option value="Denied">Denied</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                    </div>
+                    <button onclick="showRegisterModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        + Register Server
+                    </button>
+                </div>
+
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Name</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Canonical ID</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Owner</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Type</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Status</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="servers-table" class="divide-y">
+                        <!-- Servers will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Audit Tab -->
+            <div id="tab-audit" class="p-4 hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Time</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Event</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Actor</th>
+                            <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-table" class="divide-y">
+                        <!-- Audit events will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Register Server Modal -->
+    <div id="register-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h2 class="text-lg font-semibold">Register MCP Server</h2>
+                <button onclick="closeModal('register-modal')" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <form id="register-form" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Server Name</label>
+                    <input type="text" name="name" required class="w-full px-3 py-2 border rounded-lg" placeholder="My MCP Server">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Canonical ID</label>
+                    <input type="text" name="canonicalId" required class="w-full px-3 py-2 border rounded-lg" placeholder="org/server-name">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Owner Team</label>
+                    <input type="text" name="ownerTeam" required class="w-full px-3 py-2 border rounded-lg" placeholder="platform-team">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Source Type</label>
+                    <select name="sourceType" class="w-full px-3 py-2 border rounded-lg">
+                        <option value="LocalDeclared">Local (Developer Machine)</option>
+                        <option value="ContainerImage">Container Image</option>
+                        <option value="GitRepository">Git Repository</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Declared Tools (comma-separated)</label>
+                    <input type="text" name="declaredTools" class="w-full px-3 py-2 border rounded-lg" placeholder="tool1, tool2, tool3">
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeModal('register-modal')" class="px-4 py-2 border rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Server Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b flex justify-between items-center sticky top-0 bg-white">
+                <h2 class="text-lg font-semibold" id="detail-title">Server Details</h2>
+                <button onclick="closeModal('detail-modal')" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div id="detail-content" class="p-6">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Scan Modal -->
+    <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h2 class="text-lg font-semibold">Scan & Upload Results</h2>
+                <button onclick="closeModal('upload-modal')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- Step 1: Install -->
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                        <h3 class="font-medium">Install MCP-Scan (one-time)</h3>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-3 relative">
+                        <code class="text-green-400 text-sm">pip install mcp-scan</code>
+                        <button onclick="copyToClipboard('pip install mcp-scan')" class="absolute right-2 top-2 text-gray-400 hover:text-white text-sm">📋 Copy</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: One-Command Scan & Upload -->
+                <div class="border rounded-lg p-4 bg-blue-50 border-blue-200">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <span class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                        <h3 class="font-medium">Run this single command</h3>
+                        <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded">Recommended</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">This scans your server and uploads results automatically:</p>
+                    <div class="bg-gray-900 rounded-lg p-3 relative">
+                        <code id="one-liner-command" class="text-green-400 text-sm block whitespace-pre-wrap break-all"></code>
+                        <button onclick="copyOneLiner()" class="absolute right-2 top-2 text-gray-400 hover:text-white text-sm">📋 Copy</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Replace <code class="bg-gray-200 px-1 rounded">your-config.json</code> with your MCP config file path</p>
+                </div>
+
+                <!-- OR Divider -->
+                <div class="flex items-center">
+                    <div class="flex-1 border-t"></div>
+                    <span class="px-4 text-gray-500 text-sm">OR manually paste results</span>
+                    <div class="flex-1 border-t"></div>
+                </div>
+
+                <!-- Step 3: Manual Upload -->
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center space-x-2 mb-3">
+                        <span class="w-6 h-6 bg-gray-400 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                        <h3 class="font-medium text-gray-600">Manual: Scan first, then paste output</h3>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-3 relative mb-3">
+                        <code class="text-green-400 text-sm">mcp-scan scan --config your-config.json --json</code>
+                        <button onclick="copyToClipboard('mcp-scan scan --config your-config.json --json')" class="absolute right-2 top-2 text-gray-400 hover:text-white text-sm">📋 Copy</button>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Paste Scan JSON Output</label>
+                        <textarea id="scan-output" rows="8" class="w-full px-3 py-2 border rounded-lg font-mono text-sm" 
+                                  placeholder='Paste the JSON output from mcp-scan here...'></textarea>
+                    </div>
+                    <div class="flex justify-end mt-3">
+                        <button onclick="uploadScan()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upload Results</button>
+                    </div>
+                </div>
+
+                <!-- Config File Help -->
+                <details class="border rounded-lg">
+                    <summary class="p-4 cursor-pointer font-medium text-gray-700 hover:bg-gray-50">
+                        📁 How to create a config file for your MCP server
+                    </summary>
+                    <div class="p-4 pt-0 space-y-3">
+                        <p class="text-sm text-gray-600">Create a JSON file (e.g., <code class="bg-gray-100 px-1 rounded">my-server.json</code>) with this format:</p>
+                        
+                        <div class="bg-gray-900 rounded-lg p-3">
+                            <pre class="text-green-400 text-sm">{
+  "mcpServers": {
+    "my-server": {
+      "command": "python",
+      "args": ["-m", "my_mcp_server"]
+    }
+  }
+}</pre>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600">Or for an SSE server already running:</p>
+                        <div class="bg-gray-900 rounded-lg p-3">
+                            <pre class="text-green-400 text-sm">{
+  "mcpServers": {
+    "my-server": {
+      "url": "http://localhost:3000/sse"
+    }
+  }
+}</pre>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600">You can also use your existing Claude Desktop config:</p>
+                        <div class="bg-gray-900 rounded-lg p-3">
+                            <code class="text-green-400 text-sm">mcp-scan scan --config ~/.config/Claude/claude_desktop_config.json --json</code>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg hidden"></div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+        let allServers = [];
+        let currentServerId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadServers();
+            loadAuditEvents();
+            
+            document.getElementById('register-form').addEventListener('submit', registerServer);
+        });
+
+        // Load servers
+        async function loadServers() {
+            try {
+                const response = await fetch(`${API_URL}/registry/servers`);
+                allServers = await response.json();
+                renderServers(allServers);
+                updateStats(allServers);
+            } catch (error) {
+                showToast('Failed to load servers: ' + error.message, 'error');
+            }
+        }
+
+        // Render servers table
+        function renderServers(servers) {
+            const tbody = document.getElementById('servers-table');
+            tbody.innerHTML = servers.map(server => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3">
+                        <div class="font-medium text-gray-900">${escapeHtml(server.name)}</div>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${escapeHtml(server.canonical_id)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${escapeHtml(server.owner_team)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${escapeHtml(server.source_type)}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusClass(server.status)}">
+                            ${server.status}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex space-x-2">
+                            <button onclick="showServerDetail('${server.id}')" class="text-blue-600 hover:text-blue-800 text-sm">View</button>
+                            ${server.status === 'PendingScan' ? `<button onclick="showUploadModal('${server.id}')" class="text-green-600 hover:text-green-800 text-sm">Upload Scan</button>` : ''}
+                            ${['ScannedPass', 'ScannedFail'].includes(server.status) ? `
+                                <button onclick="approveServer('${server.id}')" class="text-green-600 hover:text-green-800 text-sm">Approve</button>
+                                <button onclick="denyServer('${server.id}')" class="text-red-600 hover:text-red-800 text-sm">Deny</button>
+                            ` : ''}
+                            ${server.status === 'Approved' ? `<button onclick="suspendServer('${server.id}')" class="text-yellow-600 hover:text-yellow-800 text-sm">Suspend</button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter servers
+        function filterServers() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const status = document.getElementById('status-filter').value;
+            
+            const filtered = allServers.filter(server => {
+                const matchesSearch = server.name.toLowerCase().includes(search) || 
+                                     server.canonical_id.toLowerCase().includes(search);
+                const matchesStatus = !status || server.status === status;
+                return matchesSearch && matchesStatus;
+            });
+            
+            renderServers(filtered);
+        }
+
+        // Update stats
+        function updateStats(servers) {
+            document.getElementById('stat-total').textContent = servers.length;
+            document.getElementById('stat-approved').textContent = servers.filter(s => s.status === 'Approved').length;
+            document.getElementById('stat-pending').textContent = servers.filter(s => ['PendingScan', 'ScannedPass', 'ScannedFail'].includes(s.status)).length;
+            document.getElementById('stat-denied').textContent = servers.filter(s => ['Denied', 'Suspended'].includes(s.status)).length;
+        }
+
+        // Load audit events
+        async function loadAuditEvents() {
+            try {
+                const response = await fetch(`${API_URL}/audit/events`);
+                const events = await response.json();
+                renderAuditEvents(events);
+            } catch (error) {
+                console.error('Failed to load audit events:', error);
+            }
+        }
+
+        // Render audit events
+        function renderAuditEvents(events) {
+            const tbody = document.getElementById('audit-table');
+            tbody.innerHTML = events.map(event => {
+                const details = typeof event.details === 'string' ? JSON.parse(event.details) : event.details;
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-500">${new Date(event.created_at).toLocaleString()}</td>
+                        <td class="px-4 py-3">
+                            <span class="font-medium">${escapeHtml(event.event_type)}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${escapeHtml(event.actor || 'system')}</td>
+                        <td class="px-4 py-3 text-sm text-gray-500">${escapeHtml(JSON.stringify(details))}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Register server
+        async function registerServer(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                name: form.name.value,
+                canonicalId: form.canonicalId.value,
+                ownerTeam: form.ownerTeam.value,
+                sourceType: form.sourceType.value,
+                declaredTools: form.declaredTools.value.split(',').map(t => t.trim()).filter(t => t)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/registry/servers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Registration failed');
+                }
+
+                const result = await response.json();
+                showToast(`Server registered: ${result.id}`);
+                closeModal('register-modal');
+                form.reset();
+                loadServers();
+                
+                // Show upload modal for local servers
+                if (data.sourceType === 'LocalDeclared') {
+                    currentServerId = result.id;
+                    showUploadModal(result.id);
+                }
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Show server detail
+        async function showServerDetail(id) {
+            try {
+                const [serverRes, scansRes] = await Promise.all([
+                    fetch(`${API_URL}/registry/servers/${id}`),
+                    fetch(`${API_URL}/registry/servers/${id}/scans`)
+                ]);
+                
+                const server = await serverRes.json();
+                const scans = await scansRes.json();
+                
+                const tools = typeof server.declared_tools === 'string' ? JSON.parse(server.declared_tools) : server.declared_tools;
+                
+                document.getElementById('detail-title').textContent = server.name;
+                document.getElementById('detail-content').innerHTML = `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm text-gray-500">Canonical ID</label>
+                                <p class="font-medium">${escapeHtml(server.canonical_id)}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Status</label>
+                                <p><span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusClass(server.status)}">${server.status}</span></p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Owner Team</label>
+                                <p class="font-medium">${escapeHtml(server.owner_team)}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Source Type</label>
+                                <p class="font-medium">${escapeHtml(server.source_type)}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Created</label>
+                                <p class="font-medium">${new Date(server.created_at).toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Updated</label>
+                                <p class="font-medium">${new Date(server.updated_at).toLocaleString()}</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm text-gray-500">Declared Tools</label>
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                ${tools.map(t => `<span class="px-2 py-1 bg-gray-100 rounded text-sm">${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4">
+                            <h3 class="font-medium mb-2">Scan History</h3>
+                            ${scans.length ? scans.map(scan => `
+                                <div class="bg-gray-50 p-3 rounded mb-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm">Version: ${scan.scanner_version || 'N/A'}</span>
+                                        <span class="text-sm text-gray-500">${new Date(scan.scanned_at).toLocaleString()}</span>
+                                    </div>
+                                    <div class="text-sm mt-1">Risk Score: <span class="font-medium">${scan.risk_score}</span></div>
+                                </div>
+                            `).join('') : '<p class="text-gray-500 text-sm">No scans yet</p>'}
+                        </div>
+                        
+                        <div class="flex justify-end space-x-2 border-t pt-4">
+                            ${server.status === 'PendingScan' ? `<button onclick="showUploadModal('${server.id}')" class="px-4 py-2 bg-green-600 text-white rounded-lg">Upload Scan</button>` : ''}
+                            ${['ScannedPass', 'ScannedFail'].includes(server.status) ? `
+                                <button onclick="approveServer('${server.id}')" class="px-4 py-2 bg-green-600 text-white rounded-lg">Approve</button>
+                                <button onclick="denyServer('${server.id}')" class="px-4 py-2 bg-red-600 text-white rounded-lg">Deny</button>
+                            ` : ''}
+                            ${server.status === 'Approved' ? `<button onclick="suspendServer('${server.id}')" class="px-4 py-2 bg-yellow-600 text-white rounded-lg">Suspend</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('detail-modal').classList.remove('hidden');
+            } catch (error) {
+                showToast('Error loading details: ' + error.message, 'error');
+            }
+        }
+
+        // Upload scan
+        async function uploadScan() {
+            const scanOutput = document.getElementById('scan-output').value.trim();
+            
+            if (!scanOutput) {
+                showToast('Please paste scan output', 'error');
+                return;
+            }
+            
+            try {
+                JSON.parse(scanOutput); // Validate JSON
+            } catch {
+                showToast('Invalid JSON format', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/registry/servers/${currentServerId}/scan/upload`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        scanOutput: scanOutput,
+                        scanVersion: 'mcp-scan (manual upload)',
+                        scannedAt: new Date().toISOString()
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Upload failed');
+                
+                const result = await response.json();
+                showToast(`Scan uploaded! Status: ${result.status}, Risk Score: ${result.riskScore}`);
+                closeModal('upload-modal');
+                document.getElementById('scan-output').value = '';
+                loadServers();
+                loadAuditEvents();
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Approve server
+        async function approveServer(id) {
+            if (!confirm('Approve this server?')) return;
+            await serverAction(id, 'approve');
+        }
+
+        // Deny server
+        async function denyServer(id) {
+            const reason = prompt('Reason for denial:');
+            if (reason === null) return;
+            await serverAction(id, 'deny', reason);
+        }
+
+        // Suspend server
+        async function suspendServer(id) {
+            const reason = prompt('Reason for suspension:');
+            if (reason === null) return;
+            await serverAction(id, 'suspend', reason);
+        }
+
+        async function serverAction(id, action, reason = '') {
+            try {
+                const response = await fetch(`${API_URL}/registry/servers/${id}/${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                
+                if (!response.ok) throw new Error(`${action} failed`);
+                
+                showToast(`Server ${action}d successfully`);
+                closeModal('detail-modal');
+                loadServers();
+                loadAuditEvents();
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Tab switching
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('border-blue-600', 'text-blue-600');
+            document.querySelector(`[data-tab="${tab}"]`).classList.remove('border-transparent', 'text-gray-500');
+            
+            document.getElementById('tab-servers').classList.add('hidden');
+            document.getElementById('tab-audit').classList.add('hidden');
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+        }
+
+        // Modal helpers
+        function showRegisterModal() {
+            document.getElementById('register-modal').classList.remove('hidden');
+        }
+
+        function showUploadModal(id) {
+            currentServerId = id;
+            // Generate the one-liner command
+            const apiUrl = API_URL;
+            const oneLiner = `mcp-scan scan --config your-config.json --json | curl -X POST "${apiUrl}/registry/servers/${id}/scan/upload" -H "Content-Type: application/json" -d "{\\"scanOutput\\": $(cat), \\"scanVersion\\": \\"mcp-scan\\", \\"scannedAt\\": \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\"}"`;
+            document.getElementById('one-liner-command').textContent = oneLiner;
+            document.getElementById('upload-modal').classList.remove('hidden');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            showToast('Copied to clipboard!');
+        }
+
+        function copyOneLiner() {
+            const cmd = document.getElementById('one-liner-command').textContent;
+            navigator.clipboard.writeText(cmd);
+            showToast('Command copied! Run it in your terminal.');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Helpers
+        function getStatusClass(status) {
+            const classes = {
+                'Approved': 'badge-approved',
+                'PendingScan': 'badge-pending',
+                'ScannedPass': 'badge-pending',
+                'ScannedFail': 'badge-denied',
+                'Denied': 'badge-denied',
+                'Suspended': 'badge-suspended'
+            };
+            return classes[status] || 'bg-gray-100 text-gray-800';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg ${type === 'error' ? 'bg-red-600' : 'bg-gray-800'} text-white`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+    </script>
+</body>
+</html>

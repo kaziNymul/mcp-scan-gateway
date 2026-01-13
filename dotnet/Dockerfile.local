@@ -1,0 +1,29 @@
+# Local Development Dockerfile for MCP Gateway
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY Microsoft.McpGateway.sln .
+COPY Directory.Packages.props .
+COPY Microsoft.McpGateway.Service/src/*.csproj Microsoft.McpGateway.Service/src/
+COPY Microsoft.McpGateway.Management/src/*.csproj Microsoft.McpGateway.Management/src/
+COPY Microsoft.McpGateway.Tools/src/*.csproj Microsoft.McpGateway.Tools/src/
+
+# Restore
+RUN dotnet restore Microsoft.McpGateway.Service/src/Microsoft.McpGateway.Service.csproj
+
+# Copy everything and build
+COPY . .
+RUN dotnet publish Microsoft.McpGateway.Service/src/Microsoft.McpGateway.Service.csproj \
+    -c Release -o /app/publish --no-restore
+
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/publish .
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Microsoft.McpGateway.Service.dll"]

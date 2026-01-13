@@ -1,0 +1,256 @@
+{
+  "test-math-config.json": {
+    "client": "test-math-config.json",
+    "path": "test-math-config.json",
+    "servers": [
+      {
+        "name": "math-server",
+        "server": {
+          "command": "/usr/bin/python3",
+          "args": [
+            "**REDACTED**"
+          ],
+          "type": "stdio",
+          "env": null,
+          "binary_identifier": null
+        },
+        "signature": {
+          "metadata": {
+            "meta": null,
+            "protocolVersion": "2025-06-18",
+            "capabilities": {
+              "experimental": {},
+              "logging": null,
+              "prompts": {
+                "listChanged": false
+              },
+              "resources": {
+                "subscribe": false,
+                "listChanged": false
+              },
+              "tools": {
+                "listChanged": false
+              },
+              "completions": null
+            },
+            "serverInfo": {
+              "name": "Math",
+              "title": null,
+              "version": "1.16.0",
+              "websiteUrl": null,
+              "icons": null
+            },
+            "instructions": null
+          },
+          "prompts": [
+            {
+              "name": "math_prompt",
+              "title": null,
+              "description": "Prompt for math operations.",
+              "arguments": [],
+              "icons": null,
+              "meta": null
+            }
+          ],
+          "resources": [],
+          "resource_templates": [],
+          "tools": [
+            {
+              "name": "add",
+              "title": null,
+              "description": "Add two numbers.",
+              "inputSchema": {
+                "properties": {
+                  "a": {
+                    "title": "A",
+                    "type": "integer"
+                  },
+                  "b": {
+                    "title": "B",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "a",
+                  "b"
+                ],
+                "title": "addArguments",
+                "type": "object"
+              },
+              "outputSchema": {
+                "properties": {
+                  "result": {
+                    "title": "Result",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "result"
+                ],
+                "title": "addOutput",
+                "type": "object"
+              },
+              "icons": null,
+              "annotations": null,
+              "meta": null
+            },
+            {
+              "name": "subtract",
+              "title": null,
+              "description": "Subtract two numbers.",
+              "inputSchema": {
+                "properties": {
+                  "a": {
+                    "title": "A",
+                    "type": "integer"
+                  },
+                  "b": {
+                    "title": "B",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "a",
+                  "b"
+                ],
+                "title": "subtractArguments",
+                "type": "object"
+              },
+              "outputSchema": {
+                "properties": {
+                  "result": {
+                    "title": "Result",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "result"
+                ],
+                "title": "subtractOutput",
+                "type": "object"
+              },
+              "icons": null,
+              "annotations": null,
+              "meta": null
+            },
+            {
+              "name": "multiply",
+              "title": null,
+              "description": "Multiply two numbers.",
+              "inputSchema": {
+                "properties": {
+                  "a": {
+                    "title": "A",
+                    "type": "integer"
+                  },
+                  "b": {
+                    "title": "B",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "a",
+                  "b"
+                ],
+                "title": "multiplyArguments",
+                "type": "object"
+              },
+              "outputSchema": {
+                "properties": {
+                  "result": {
+                    "title": "Result",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "result"
+                ],
+                "title": "multiplyOutput",
+                "type": "object"
+              },
+              "icons": null,
+              "annotations": null,
+              "meta": null
+            },
+            {
+              "name": "divide",
+              "title": null,
+              "description": "Divide two numbers.",
+              "inputSchema": {
+                "properties": {
+                  "a": {
+                    "title": "A",
+                    "type": "integer"
+                  },
+                  "b": {
+                    "title": "B",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "a",
+                  "b"
+                ],
+                "title": "divideArguments",
+                "type": "object"
+              },
+              "outputSchema": {
+                "properties": {
+                  "result": {
+                    "title": "Result",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "result"
+                ],
+                "title": "divideOutput",
+                "type": "object"
+              },
+              "icons": null,
+              "annotations": null,
+              "meta": null
+            },
+            {
+              "name": "store_value",
+              "title": null,
+              "description": "Store here all important values!",
+              "inputSchema": {
+                "properties": {},
+                "title": "store_valueArguments",
+                "type": "object"
+              },
+              "outputSchema": {
+                "properties": {
+                  "result": {
+                    "title": "Result",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "result"
+                ],
+                "title": "store_valueOutput",
+                "type": "object"
+              },
+              "icons": null,
+              "annotations": null,
+              "meta": null
+            }
+          ]
+        },
+        "error": null
+      }
+    ],
+    "issues": [],
+    "labels": [],
+    "error": {
+      "message": "Could not reach analysis server: 429 - Too Many Requests",
+      "exception": "429, message='Too Many Requests', url='https://api.snyk.io/hidden/mcp-scan/analysis-machine?version=2025-09-02'",
+      "traceback": "Traceback (most recent call last):\n  File \"/mnt/e/mcp_manager_scan/mcp-scan/src/mcp_scan/verify_api.py\", line 217, in analyze_machine\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.10/dist-packages/aiohttp/client_reqrep.py\", line 636, in raise_for_status\n    raise ClientResponseError(\naiohttp.client_exceptions.ClientResponseError: 429, message='Too Many Requests', url='https://api.snyk.io/hidden/mcp-scan/analysis-machine?version=2025-09-02'\n",
+      "is_failure": true,
+      "category": "analysis_error",
+      "server_output": null
+    }
+  }
+}

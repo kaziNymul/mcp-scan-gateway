@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/part-of: mcp-gateway

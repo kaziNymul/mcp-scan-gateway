@@ -1,0 +1,75 @@
+version: '3.8'
+
+# =============================================================================
+# MCP Jurisdiction - Minimal Local Test Stack
+# =============================================================================
+# A simplified stack for testing the MCP scanning workflow:
+#   - PostgreSQL (registry database)
+#   - Mock Gateway API (Python/FastAPI - simulates the .NET gateway)
+#   - Sample MCP Server (for testing scans)
+#
+# Usage:
+#   cd mcp-gateway
+#   docker-compose -f docker-compose.test.yml up -d
+#
+# Then:
+#   1. Scan the sample server: mcp-scan scan --config test-config.json
+#   2. Register via API: curl -X POST http://localhost:8080/registry/servers
+#   3. Check registration: curl http://localhost:8080/registry/servers
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mcp-postgres
+    environment:
+      POSTGRES_DB: mcp_jurisdiction
+      POSTGRES_USER: mcp_admin
+      POSTGRES_PASSWORD: localdev123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcp_admin -d mcp_jurisdiction"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # Mock Gateway API (for testing without .NET build)
+  # ===========================================================================
+  gateway:
+    build:
+      context: ./test-gateway
+      dockerfile: Dockerfile
+    container_name: mcp-gateway
+    environment:
+      DATABASE_URL: "postgresql://mcp_admin:localdev123@postgres:5432/mcp_jurisdiction"
+      POLICY_MAX_RISK_SCORE: "75"
+      POLICY_AUTO_APPROVE_BELOW: "25"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ===========================================================================
+  # Sample MCP Server (Weather)
+  # ===========================================================================
+  weather-server:
+    build:
+      context: ./sample-servers/weather-server
+      dockerfile: Dockerfile
+    container_name: mcp-weather-server
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+
+volumes:
+  postgres_data:

@@ -1,0 +1,14 @@
+# Pod Disruption Budget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mcp-jurisdiction-gateway
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mcp-jurisdiction
+      app.kubernetes.io/component: gateway

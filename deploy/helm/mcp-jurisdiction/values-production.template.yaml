@@ -1,0 +1,148 @@
+# MCP Jurisdiction - Production Values Template
+# Copy this file and fill in your company-specific values
+# 
+# Usage:
+#   cp values-production.template.yaml values-production.yaml
+#   # Edit values-production.yaml with your values
+#   helm upgrade --install mcp-jurisdiction . -f values-production.yaml -n mcp-jurisdiction
+
+# ============================================================================
+# REQUIRED: Update these values for your environment
+# ============================================================================
+
+# Your company's gateway hostname
+gatewayHostname: "mcp-gateway.YOURCOMPANY.com"  # <-- CHANGE THIS
+
+# SSO/OIDC Configuration
+ssoConfig:
+  provider: "azuread"  # Options: azuread, okta, keycloak, generic
+  
+  # Azure AD / Entra ID
+  azuread:
+    tenantId: "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"   # <-- CHANGE THIS
+    clientId: "YYYYYYYY-YYYY-YYYY-YYYY-YYYYYYYYYYYY"   # <-- CHANGE THIS
+  
+  # Okta
+  okta:
+    issuerUrl: "https://YOURCOMPANY.okta.com"          # <-- CHANGE THIS
+    audience: "api://mcp-gateway"
+  
+  # Keycloak
+  keycloak:
+    issuerUrl: "https://keycloak.YOURCOMPANY.com/realms/mcp"
+    audience: "mcp-gateway-client"
+
+# Database Configuration
+database:
+  # Use external PostgreSQL in production (recommended)
+  useExternal: true
+  host: "postgres.YOURCOMPANY.com"                     # <-- CHANGE THIS
+  port: 5432
+  name: "mcpgov"
+  username: "mcpgov"
+  # Password should be in Kubernetes secret, not here
+  existingSecret: "mcp-postgres-credentials"
+  existingSecretKey: "password"
+
+# ============================================================================
+# Standard Production Settings (usually don't need to change)
+# ============================================================================
+
+gateway:
+  replicaCount: 3
+  image:
+    repository: mcr.microsoft.com/mcp-gateway
+    tag: "1.0.0"  # Pin to specific version in production
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  
+  aspnetcoreEnvironment: Production
+
+jurisdiction:
+  enabled: true
+  enforcementMode: Enforce
+  
+  policy:
+    globalToolDenylist:
+      - filesystem_write_sensitive
+      - shell_execute_arbitrary
+      - network_egress_unrestricted
+    riskThreshold: 0.7
+    scanPassThreshold: 0.5
+    requireAdminForHighRisk: true
+    enforceRegistryOnly: true
+    rateLimitPerUser: 60
+    rateLimitPerTeam: 600
+
+scanner:
+  image:
+    repository: ghcr.io/invariantlabs-ai/mcp-scan
+    tag: "0.2.1"
+    pullPolicy: IfNotPresent
+  timeoutSeconds: 300
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Disable embedded PostgreSQL (use external)
+postgresql:
+  enabled: false
+
+# Use Redis for caching
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: true
+    password: ""  # Set via existingSecret
+    existingSecret: "mcp-redis-credentials"
+    existingSecretPasswordKey: "password"
+
+# Production authentication
+auth:
+  development:
+    enabled: false
+  oidc:
+    enabled: true
+
+# Ingress with TLS
+ingress:
+  enabled: true
+  className: nginx  # Change for your MKE: traefik, contour, etc.
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"  # If using cert-manager
+  tls:
+    - secretName: mcp-gateway-tls
+      hosts:
+        - mcp-gateway.YOURCOMPANY.com  # <-- CHANGE THIS
+
+# High Availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Monitoring
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 30s
+
+# Network Policy
+networkPolicy:
+  enabled: true

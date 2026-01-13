@@ -1,0 +1,253 @@
+# MCP Gateway with Jurisdiction - Default Values
+# This chart deploys the MCP Gateway with registry, scanning, and policy enforcement
+
+# ============================================================================
+# Global Settings
+# ============================================================================
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# ============================================================================
+# Gateway Settings
+# ============================================================================
+gateway:
+  replicaCount: 2
+  image:
+    repository: mcr.microsoft.com/mcp-gateway
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  service:
+    type: ClusterIP
+    port: 8000
+  
+  # Environment configuration
+  aspnetcoreEnvironment: Production
+  
+  # Liveness and readiness probes
+  probes:
+    liveness:
+      enabled: true
+      path: /ping
+      port: 8000
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    readiness:
+      enabled: true
+      path: /ping
+      port: 8000
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+# ============================================================================
+# Jurisdiction Configuration
+# ============================================================================
+jurisdiction:
+  enabled: true
+  enforcementMode: Enforce  # Enforce or Audit
+  
+  policy:
+    globalToolDenylist:
+      - filesystem_write_sensitive
+      - shell_execute_arbitrary
+      - network_egress_unrestricted
+    deniedToolCategories:
+      - dangerous
+      - experimental
+    teamAllowlists: {}
+    teamDenylists: {}
+    rateLimitPerUser: 60
+    rateLimitPerTeam: 600
+    defaultTimeoutMs: 30000
+    maxRequestPayloadBytes: 1048576    # 1MB
+    maxResponsePayloadBytes: 10485760  # 10MB
+    riskThreshold: 0.7
+    scanPassThreshold: 0.5
+    requireAdminForHighRisk: true
+    enforceRegistryOnly: true
+    bypassAllowedPrincipals: []
+
+# ============================================================================
+# Scanner Configuration
+# ============================================================================
+scanner:
+  image:
+    repository: ghcr.io/invariantlabs-ai/mcp-scan
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  timeoutSeconds: 300
+  retries: 1
+  
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  enableDynamicTesting: false
+  analysisApiUrl: ""
+
+# ============================================================================
+# PostgreSQL Configuration
+# ============================================================================
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "mcpgov-admin"
+    username: mcpgov
+    password: "mcpgov-secret"
+    database: mcpgov
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# External PostgreSQL (if postgresql.enabled is false)
+externalPostgres:
+  host: ""
+  port: 5432
+  database: mcpgov
+  username: mcpgov
+  password: ""
+  existingSecret: ""
+  existingSecretPasswordKey: password
+
+# ============================================================================
+# Redis Configuration (for development/caching)
+# ============================================================================
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+
+# ============================================================================
+# Authentication Configuration
+# ============================================================================
+auth:
+  # Development mode settings
+  development:
+    enabled: false
+    jwtSecret: "dev-jwt-secret-change-in-production"
+  
+  # Production OIDC settings
+  oidc:
+    enabled: true
+    issuerUrl: ""
+    audience: ""
+    # Azure AD specific
+    azureAd:
+      tenantId: ""
+      clientId: ""
+
+# ============================================================================
+# Ingress Configuration
+# ============================================================================
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+  hosts:
+    - host: mcp-gateway.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: mcp-gateway-tls
+  #    hosts:
+  #      - mcp-gateway.example.com
+
+# ============================================================================
+# Service Account
+# ============================================================================
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# ============================================================================
+# RBAC Configuration
+# ============================================================================
+rbac:
+  create: true
+  # Extra rules for scanner job creation
+  scannerRules:
+    - apiGroups: ["batch"]
+      resources: ["jobs"]
+      verbs: ["create", "get", "list", "watch", "delete"]
+    - apiGroups: [""]
+      resources: ["pods", "pods/log"]
+      verbs: ["get", "list", "watch"]
+
+# ============================================================================
+# Network Policies
+# ============================================================================
+networkPolicy:
+  enabled: true
+  # Allow ingress from nginx-ingress
+  ingressControllerLabels:
+    app.kubernetes.io/name: ingress-nginx
+
+# ============================================================================
+# Pod Disruption Budget
+# ============================================================================
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# ============================================================================
+# Monitoring
+# ============================================================================
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    interval: 30s
+    scrapeTimeout: 10s
+    labels: {}
+
+# ============================================================================
+# Node Selection
+# ============================================================================
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# ============================================================================
+# Extra Environment Variables
+# ============================================================================
+extraEnv: []
+# - name: MY_VAR
+#   value: "my-value"
+
+# ============================================================================
+# Extra Volumes and Mounts
+# ============================================================================
+extraVolumes: []
+extraVolumeMounts: []

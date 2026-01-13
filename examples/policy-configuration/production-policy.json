@@ -1,0 +1,49 @@
+{
+  "globalToolDenylist": [
+    "shell_execute",
+    "arbitrary_code_run",
+    "raw_sql_query",
+    "file_system_admin",
+    "network_raw_socket"
+  ],
+  "deniedToolCategories": [
+    "system_admin",
+    "code_execution_unrestricted"
+  ],
+  "teamAllowlists": {
+    "security-team": ["*"],
+    "sre-team": [
+      "github.com/modelcontextprotocol/*",
+      "internal/monitoring-*",
+      "internal/alerting-*"
+    ],
+    "platform-team": [
+      "github.com/modelcontextprotocol/*",
+      "internal/platform-*",
+      "internal/ci-*"
+    ],
+    "development-team": [
+      "internal/dev-*",
+      "github.com/modelcontextprotocol/servers/filesystem"
+    ]
+  },
+  "teamDenylists": {
+    "external-contractors": [
+      "internal/finance-*",
+      "internal/hr-*",
+      "internal/security-*"
+    ]
+  },
+  "rateLimitPerUser": 500,
+  "rateLimitPerTeam": 5000,
+  "defaultTimeoutMs": 30000,
+  "maxRequestPayloadBytes": 10485760,
+  "maxResponsePayloadBytes": 52428800,
+  "riskThreshold": 50,
+  "scanPassThreshold": 35,
+  "requireAdminForHighRisk": true,
+  "enforceRegistryOnly": true,
+  "bypassAllowedPrincipals": [
+    "break-glass-admin@company.com"
+  ]
+}

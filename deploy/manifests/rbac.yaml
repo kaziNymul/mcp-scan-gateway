@@ -1,0 +1,88 @@
+# Service account for the MCP Gateway
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-jurisdiction-gateway
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/component: gateway
+---
+# Service account for MCP-Scan jobs
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-jurisdiction-scanner
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/component: scanner
+---
+# Role for the gateway - allows managing scanner jobs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mcp-jurisdiction-gateway
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/component: gateway
+rules:
+  # Create and manage scanner jobs
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  # Read pod logs to extract scan results
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+---
+# Role for scanner jobs - minimal permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mcp-jurisdiction-scanner
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/component: scanner
+rules:
+  # Scanner needs no special cluster permissions
+  # It only makes outbound HTTPS calls to scan targets
+  []
+---
+# Bind gateway role to gateway service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcp-jurisdiction-gateway
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/component: gateway
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mcp-jurisdiction-gateway
+subjects:
+  - kind: ServiceAccount
+    name: mcp-jurisdiction-gateway
+    namespace: mcp-jurisdiction
+---
+# Bind scanner role to scanner service account
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcp-jurisdiction-scanner
+  namespace: mcp-jurisdiction
+  labels:
+    app.kubernetes.io/name: mcp-jurisdiction
+    app.kubernetes.io/component: scanner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mcp-jurisdiction-scanner
+subjects:
+  - kind: ServiceAccount
+    name: mcp-jurisdiction-scanner
+    namespace: mcp-jurisdiction

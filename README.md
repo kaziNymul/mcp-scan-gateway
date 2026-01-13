@@ -8,6 +8,7 @@
 - [Key Concepts](#key-concepts)
 - [Architecture](#architecture)
 - [Features](#features)
+- [MCP Jurisdiction & Security Scanning](#mcp-jurisdiction--security-scanning)
 - [Getting Started – Local Deployment](#getting-started---local-deployment)
 - [Getting Started – 1-Click Deploy to Azure](#getting-started---deploy-to-azure)
 
@@ -160,6 +161,7 @@ For step-by-step guidance on configuring Azure Entra ID (creating `mcp.admin` an
 ### Additional Capabilities
 
 - *New*: Support for **Proxying Local & Remote MCP Servers**. See [examples and usage](sample-servers/mcp-proxy/README.md).
+- *New*: **MCP Jurisdiction** - Registry-based governance with security scanning. See [MCP Jurisdiction](#mcp-jurisdiction--security-scanning).
 - Stateless reverse proxy with a distributed session store (production mode).
 - Kubernetes-native deployment using StatefulSets and headless services.
 
@@ -186,6 +188,123 @@ The MCP Gateway now supports **tool registration** with dynamic routing capabili
    - The router analyzes the tool call in the request
    - Based on the tool definition, it forwards the execution to the correct registered tool server
    - Results are returned through the router back to the client
+
+## MCP Jurisdiction & Security Scanning
+
+MCP Jurisdiction provides a **governance boundary** for MCP servers, integrating [Invariant Labs MCP-Scan](https://github.com/invariantlabs-ai/mcp-scan) for automated security scanning.
+
+### Architecture Overview
+
+```mermaid
+flowchart TB
+    subgraph Clients["Clients"]
+        Agent["🤖 AI Agent"]
+        Admin["👤 Admin Portal"]
+    end
+    
+    subgraph Gateway["MCP Gateway + Jurisdiction"]
+        JMiddleware["🛡️ Jurisdiction Middleware"]
+        Registry["📋 Server Registry"]
+        PolicyEngine["⚖️ Policy Engine"]
+        AuditLog["📝 Audit Logger"]
+    end
+    
+    subgraph Scanner["Security Scanning"]
+        ScannerSvc["🔍 Scanner Service"]
+        ScanJob["📦 MCP-Scan K8s Job"]
+    end
+    
+    subgraph Backend["Backend"]
+        PostgreSQL["🐘 PostgreSQL"]
+        Redis["💾 Redis"]
+    end
+    
+    subgraph MCPServers["Approved MCP Servers"]
+        Server1["✅ Server A"]
+        Server2["✅ Server B"]
+    end
+    
+    Agent -->|"MCP Request"| JMiddleware
+    Admin -->|"Register/Approve"| Registry
+    
+    JMiddleware -->|"Check Policy"| PolicyEngine
+    JMiddleware -->|"Log Event"| AuditLog
+    JMiddleware -->|"Approved?"| MCPServers
+    
+    Registry -->|"Trigger Scan"| ScannerSvc
+    ScannerSvc -->|"Create"| ScanJob
+    ScanJob -->|"Store Results"| Registry
+    
+    Registry --> PostgreSQL
+    AuditLog --> PostgreSQL
+    PolicyEngine --> Redis
+```
+
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Server Registry** | Central catalog of all MCP servers with approval workflow |
+| **Security Scanning** | Automated vulnerability scans via MCP-Scan K8s Jobs |
+| **Policy Enforcement** | Block unapproved servers, deny dangerous tools |
+| **Team Allowlists** | Restrict server access by team/principal |
+| **Audit Logging** | Complete trail of all tool invocations |
+| **Risk Scoring** | Quantified risk levels from scan results |
+| **Prometheus Metrics** | Observability for governance decisions |
+
+### Governance Workflow
+
+```
+1. Register    → Server added to registry (Draft status)
+2. Scan        → MCP-Scan Job analyzes server for vulnerabilities
+3. Review      → Scan results reviewed by security team
+4. Approve     → Admin approves server (or denies if risky)
+5. Enforce     → Only approved servers accessible through gateway
+6. Audit       → All tool calls logged with decision details
+```
+
+### ⚠️ Important Scope Limitations
+
+> **Do NOT claim this solution can "scan laptops and detect all MCP servers."**
+
+This is a **governance boundary** that:
+- ✅ Requires servers to be **registered** before gateway access
+- ✅ **Scans** registered servers via Kubernetes Jobs
+- ✅ **Enforces** policy on gateway-proxied traffic only
+- ❌ Cannot detect or block **direct** MCP connections that bypass the gateway
+
+See [Security Documentation](docs/security.md) for threat model and mitigations.
+
+### Registry API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/registry/servers` | POST | Register a new MCP server |
+| `/registry/servers` | GET | List all registered servers |
+| `/registry/servers/{id}` | GET | Get server details |
+| `/registry/servers/{id}/scan` | POST | Trigger security scan |
+| `/registry/servers/{id}/approve` | POST | Approve server (admin) |
+| `/registry/servers/{id}/deny` | POST | Deny server (admin) |
+| `/registry/audit` | GET | Query audit events |
+
+### Deployment
+
+**Helm Chart (Recommended):**
+```bash
+helm install mcp-jurisdiction ./deploy/helm/mcp-jurisdiction \
+  --namespace mcp-jurisdiction \
+  --create-namespace \
+  -f values-production.yaml
+```
+
+**Plain Manifests:**
+```bash
+kubectl apply -f deploy/manifests/namespace.yaml
+kubectl apply -f deploy/manifests/secrets.yaml  # Edit first!
+kubectl apply -f deploy/manifests/
+```
+
+See [examples/](examples/) for registration workflows and policy configuration.
 
 ## Getting Started - Local Deployment
 

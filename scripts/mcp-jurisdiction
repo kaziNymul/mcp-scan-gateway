@@ -1,0 +1,262 @@
+#!/usr/bin/env python3
+"""
+MCP Jurisdiction CLI
+====================
+A simple CLI for developers to register, scan, and upload MCP servers
+to the governance registry in one command.
+
+Usage:
+    # Register + Scan + Upload in one command
+    mcp-jurisdiction register --name "My Server" --config my-server.json
+    
+    # Just scan and upload to existing registration
+    mcp-jurisdiction upload --server-id abc123 --config my-server.json
+    
+    # Check if your server is approved
+    mcp-jurisdiction check --server-id abc123
+"""
+
+import argparse
+import json
+import subprocess
+import sys
+import urllib.request
+import urllib.error
+from datetime import datetime
+from pathlib import Path
+
+# Default gateway URL - developers can override with env var or --gateway flag
+DEFAULT_GATEWAY = "http://localhost:8080"
+
+def get_gateway_url(args):
+    import os
+    return args.gateway or os.environ.get("MCP_GATEWAY_URL", DEFAULT_GATEWAY)
+
+def run_scan(config_path: str) -> dict:
+    """Run mcp-scan and return results."""
+    print(f"🔍 Scanning MCP server using config: {config_path}")
+    
+    try:
+        result = subprocess.run(
+            ["mcp-scan", "scan", "--config", config_path, "--json"],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode != 0 and not result.stdout:
+            print(f"❌ Scan failed: {result.stderr}")
+            sys.exit(1)
+        
+        scan_data = json.loads(result.stdout)
+        print("✅ Scan completed")
+        return scan_data
+        
+    except FileNotFoundError:
+        print("❌ mcp-scan not found. Install with: pip install mcp-scan")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        print(f"❌ Failed to parse scan output")
+        sys.exit(1)
+    except subprocess.TimeoutExpired:
+        print("❌ Scan timed out")
+        sys.exit(1)
+
+def api_request(url: str, method: str = "GET", data: dict = None) -> dict:
+    """Make an API request."""
+    headers = {"Content-Type": "application/json"}
+    body = json.dumps(data).encode() if data else None
+    
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)
+    
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            return json.loads(response.read().decode())
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode()
+        try:
+            return {"error": json.loads(error_body)}
+        except:
+            return {"error": error_body}
+    except urllib.error.URLError as e:
+        return {"error": str(e.reason)}
+
+def cmd_register(args):
+    """Register a new server, scan it, and upload results."""
+    gateway = get_gateway_url(args)
+    
+    # Extract tools from scan if available
+    declared_tools = []
+    scan_data = None
+    
+    if args.config:
+        scan_data = run_scan(args.config)
+        # Extract tool names from scan
+        for config_key, config_data in scan_data.items():
+            for server in config_data.get("servers", []):
+                if server.get("signature"):
+                    for tool in server["signature"].get("tools", []):
+                        declared_tools.append(tool.get("name", ""))
+    
+    # Register the server
+    print(f"📝 Registering server: {args.name}")
+    
+    canonical_id = args.id or f"local/{args.name.lower().replace(' ', '-')}"
+    
+    register_data = {
+        "canonicalId": canonical_id,
+        "name": args.name,
+        "ownerTeam": args.team or "default-team",
+        "sourceType": "LocalDeclared",
+        "declaredTools": declared_tools or args.tools.split(",") if args.tools else [],
+        "mcpConfig": {"configFile": args.config} if args.config else None
+    }
+    
+    response = api_request(f"{gateway}/registry/servers", "POST", register_data)
+    
+    if "error" in response:
+        print(f"❌ Registration failed: {response['error']}")
+        sys.exit(1)
+    
+    server_id = response["id"]
+    print(f"✅ Server registered: {server_id}")
+    
+    # Upload scan results if we have them
+    if scan_data:
+        print("📤 Uploading scan results...")
+        
+        upload_data = {
+            "scanOutput": json.dumps(scan_data),
+            "scanVersion": "mcp-scan",
+            "scannedAt": datetime.utcnow().isoformat() + "Z"
+        }
+        
+        upload_response = api_request(
+            f"{gateway}/registry/servers/{server_id}/scan/upload",
+            "POST",
+            upload_data
+        )
+        
+        if "error" in upload_response:
+            print(f"⚠️  Upload failed: {upload_response['error']}")
+        else:
+            print(f"✅ Scan uploaded!")
+            print(f"   Status: {upload_response.get('status')}")
+            print(f"   Risk Score: {upload_response.get('riskScore')}")
+    
+    print(f"\n🎉 Done! Server ID: {server_id}")
+    print(f"   View in UI: {gateway.replace(':8080', ':3000')}")
+
+def cmd_upload(args):
+    """Scan and upload to existing server."""
+    gateway = get_gateway_url(args)
+    
+    scan_data = run_scan(args.config)
+    
+    print("📤 Uploading scan results...")
+    
+    upload_data = {
+        "scanOutput": json.dumps(scan_data),
+        "scanVersion": "mcp-scan",
+        "scannedAt": datetime.utcnow().isoformat() + "Z"
+    }
+    
+    response = api_request(
+        f"{gateway}/registry/servers/{args.server_id}/scan/upload",
+        "POST",
+        upload_data
+    )
+    
+    if "error" in response:
+        print(f"❌ Upload failed: {response['error']}")
+        sys.exit(1)
+    
+    print(f"✅ Scan uploaded!")
+    print(f"   Status: {response.get('status')}")
+    print(f"   Risk Score: {response.get('riskScore')}")
+
+def cmd_check(args):
+    """Check if a server is approved."""
+    gateway = get_gateway_url(args)
+    
+    response = api_request(f"{gateway}/registry/servers/{args.server_id}")
+    
+    if "error" in response:
+        print(f"❌ Server not found")
+        sys.exit(1)
+    
+    status = response.get("status")
+    name = response.get("name")
+    
+    print(f"Server: {name}")
+    print(f"Status: {status}")
+    
+    if status == "Approved":
+        print("✅ Your server is approved and can be used!")
+    elif status == "PendingScan":
+        print("⏳ Waiting for scan results. Run: mcp-jurisdiction upload --server-id {args.server_id} --config your-config.json")
+    elif status in ["ScannedPass", "ScannedFail"]:
+        print("⏳ Waiting for admin approval")
+    elif status == "Denied":
+        print("❌ Server was denied. Contact your admin.")
+    elif status == "Suspended":
+        print("⚠️  Server is suspended. Contact your admin.")
+
+def cmd_list(args):
+    """List all servers."""
+    gateway = get_gateway_url(args)
+    
+    response = api_request(f"{gateway}/registry/servers")
+    
+    if isinstance(response, dict) and "error" in response:
+        print(f"❌ Failed to list servers: {response['error']}")
+        sys.exit(1)
+    
+    print(f"{'Name':<30} {'Status':<15} {'Owner':<20}")
+    print("-" * 65)
+    for server in response:
+        print(f"{server['name']:<30} {server['status']:<15} {server['owner_team']:<20}")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="MCP Jurisdiction CLI - Register and scan MCP servers"
+    )
+    parser.add_argument("--gateway", help="Gateway API URL (default: $MCP_GATEWAY_URL or localhost:8080)")
+    
+    subparsers = parser.add_subparsers(dest="command", help="Commands")
+    
+    # Register command
+    reg_parser = subparsers.add_parser("register", help="Register, scan, and upload a new server")
+    reg_parser.add_argument("--name", "-n", required=True, help="Server name")
+    reg_parser.add_argument("--config", "-c", required=True, help="MCP config file path")
+    reg_parser.add_argument("--id", help="Canonical ID (default: local/<name>)")
+    reg_parser.add_argument("--team", "-t", help="Owner team")
+    reg_parser.add_argument("--tools", help="Comma-separated tool names (auto-detected if --config provided)")
+    
+    # Upload command
+    upload_parser = subparsers.add_parser("upload", help="Scan and upload to existing server")
+    upload_parser.add_argument("--server-id", "-s", required=True, help="Server ID")
+    upload_parser.add_argument("--config", "-c", required=True, help="MCP config file path")
+    
+    # Check command
+    check_parser = subparsers.add_parser("check", help="Check server status")
+    check_parser.add_argument("--server-id", "-s", required=True, help="Server ID")
+    
+    # List command
+    list_parser = subparsers.add_parser("list", help="List all servers")
+    
+    args = parser.parse_args()
+    
+    if args.command == "register":
+        cmd_register(args)
+    elif args.command == "upload":
+        cmd_upload(args)
+    elif args.command == "check":
+        cmd_check(args)
+    elif args.command == "list":
+        cmd_list(args)
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()

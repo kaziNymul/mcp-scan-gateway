@@ -1,0 +1,124 @@
+version: '3.8'
+
+# =============================================================================
+# MCP Jurisdiction - Local Development Stack
+# =============================================================================
+# This docker-compose sets up the complete MCP Jurisdiction system locally:
+#   - PostgreSQL (registry database)
+#   - Redis (session cache)
+#   - MCP Gateway API (.NET)
+#   - Admin UI (Next.js)
+#   - Sample MCP Server (for testing)
+#
+# Usage:
+#   docker-compose up -d
+#   Open http://localhost:3000 (UI) or http://localhost:8080 (API)
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mcp-postgres
+    environment:
+      POSTGRES_DB: mcp_jurisdiction
+      POSTGRES_USER: mcp_admin
+      POSTGRES_PASSWORD: localdev123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcp_admin -d mcp_jurisdiction"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # Redis Cache
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: mcp-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # MCP Gateway API
+  # ===========================================================================
+  gateway:
+    build:
+      context: ./dotnet
+      dockerfile: Dockerfile.local
+    container_name: mcp-gateway
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PostgreSQL: "Host=postgres;Database=mcp_jurisdiction;Username=mcp_admin;Password=localdev123"
+      ConnectionStrings__Redis: "redis:6379"
+      # Disable auth for local testing
+      Authentication__Enabled: "false"
+      # Policy settings
+      Policy__MaxRiskScore: "75"
+      Policy__RequireApproval: "true"
+      Policy__AutoApproveBelow: "25"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # Admin UI
+  # ===========================================================================
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile.local
+    container_name: mcp-ui
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: local-dev-secret-change-in-prod
+      # Disable Azure AD for local testing - use mock auth
+      AUTH_PROVIDER: mock
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gateway
+
+  # ===========================================================================
+  # Sample MCP Server (for testing)
+  # ===========================================================================
+  sample-mcp-server:
+    build:
+      context: ./sample-servers/weather-server
+      dockerfile: Dockerfile
+    container_name: sample-mcp-server
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+      MCP_TRANSPORT: sse
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: mcp-jurisdiction-network

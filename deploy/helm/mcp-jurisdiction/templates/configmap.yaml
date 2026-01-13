@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mcp-jurisdiction.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mcp-jurisdiction.labels" . | nindent 4 }}
+data:
+  appsettings.Production.json: |
+    {
+      "Jurisdiction": {
+        "Enabled": {{ .Values.jurisdiction.enabled }},
+        "EnforcementMode": "{{ .Values.jurisdiction.enforcementMode }}",
+        "PostgresConnection": "{{ include "mcp-jurisdiction.postgresConnection" . }}",
+        "Policy": {
+          "GlobalToolDenylist": {{ .Values.jurisdiction.policy.globalToolDenylist | toJson }},
+          "DeniedToolCategories": {{ .Values.jurisdiction.policy.deniedToolCategories | toJson }},
+          "TeamAllowlists": {{ .Values.jurisdiction.policy.teamAllowlists | toJson }},
+          "TeamDenylists": {{ .Values.jurisdiction.policy.teamDenylists | toJson }},
+          "RateLimitPerUser": {{ .Values.jurisdiction.policy.rateLimitPerUser }},
+          "RateLimitPerTeam": {{ .Values.jurisdiction.policy.rateLimitPerTeam }},
+          "DefaultTimeoutMs": {{ .Values.jurisdiction.policy.defaultTimeoutMs }},
+          "MaxRequestPayloadBytes": {{ .Values.jurisdiction.policy.maxRequestPayloadBytes }},
+          "MaxResponsePayloadBytes": {{ .Values.jurisdiction.policy.maxResponsePayloadBytes }},
+          "RiskThreshold": {{ .Values.jurisdiction.policy.riskThreshold }},
+          "ScanPassThreshold": {{ .Values.jurisdiction.policy.scanPassThreshold }},
+          "RequireAdminForHighRisk": {{ .Values.jurisdiction.policy.requireAdminForHighRisk }},
+          "EnforceRegistryOnly": {{ .Values.jurisdiction.policy.enforceRegistryOnly }},
+          "BypassAllowedPrincipals": {{ .Values.jurisdiction.policy.bypassAllowedPrincipals | toJson }}
+        },
+        "Scanner": {
+          "Image": "{{ include "mcp-jurisdiction.scannerImage" . }}",
+          "TimeoutSeconds": {{ .Values.scanner.timeoutSeconds }},
+          "Retries": {{ .Values.scanner.retries }},
+          "JobNamespace": "{{ .Release.Namespace }}",
+          "JobServiceAccount": "{{ include "mcp-jurisdiction.fullname" . }}-scanner",
+          "CpuRequest": "{{ .Values.scanner.resources.requests.cpu }}",
+          "MemoryRequest": "{{ .Values.scanner.resources.requests.memory }}",
+          "CpuLimit": "{{ .Values.scanner.resources.limits.cpu }}",
+          "MemoryLimit": "{{ .Values.scanner.resources.limits.memory }}",
+          "EnableDynamicTesting": {{ .Values.scanner.enableDynamicTesting }},
+          "AnalysisApiUrl": "{{ .Values.scanner.analysisApiUrl }}"
+        }
+      },
+      "Redis": {
+        "ConnectionString": "{{ include "mcp-jurisdiction.redisConnection" . }}"
+      },
+      {{- if .Values.auth.oidc.enabled }}
+      "AzureAd": {
+        "TenantId": "{{ .Values.auth.oidc.azureAd.tenantId }}",
+        "ClientId": "{{ .Values.auth.oidc.azureAd.clientId }}",
+        "Instance": "https://login.microsoftonline.com/"
+      },
+      {{- end }}
+      "Logging": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      }
+    }

@@ -1,0 +1,67 @@
+{{- if .Values.rbac.create -}}
+# Role for gateway to manage adapters and tools
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "mcp-jurisdiction.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mcp-jurisdiction.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["statefulsets", "deployments"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: [""]
+    resources: ["services", "pods", "configmaps", "secrets"]
+    verbs: ["get", "list", "create", "update", "delete", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "watch"]
+---
+# Role for scanner to create and manage scan jobs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "mcp-jurisdiction.fullname" . }}-scanner
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mcp-jurisdiction.labels" . | nindent 4 }}
+rules:
+  {{- with .Values.rbac.scannerRules }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+---
+# RoleBinding for gateway
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "mcp-jurisdiction.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mcp-jurisdiction.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "mcp-jurisdiction.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "mcp-jurisdiction.fullname" . }}-gateway
+  apiGroup: rbac.authorization.k8s.io
+---
+# RoleBinding for scanner
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "mcp-jurisdiction.fullname" . }}-scanner
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "mcp-jurisdiction.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "mcp-jurisdiction.fullname" . }}-scanner
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "mcp-jurisdiction.fullname" . }}-scanner
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

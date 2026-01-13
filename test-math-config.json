@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "math-server": {
+      "command": "/usr/bin/python3",
+      "args": ["/mnt/e/mcp_manager_scan/mcp-scan/tests/mcp_servers/math_server.py"]
+    }
+  }
+}
