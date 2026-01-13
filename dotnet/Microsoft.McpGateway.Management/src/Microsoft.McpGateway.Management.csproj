@@ -14,5 +14,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="ModelContextProtocol" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Npgsql" />
   </ItemGroup>
 </Project>
