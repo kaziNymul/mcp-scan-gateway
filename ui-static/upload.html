@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Server Scan Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">🔍 MCP Server Registration</h1>
+            <p class="text-gray-600 mb-8">Scan your MCP server and upload the results for approval</p>
+
+            <!-- Step Indicator -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div id="step1-indicator" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
+                        <span class="ml-2 font-medium">Scan Server</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+                    <div class="flex items-center">
+                        <div id="step2-indicator" class="w-8 h-8 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold">2</div>
+                        <span class="ml-2 font-medium">Upload Results</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+                    <div class="flex items-center">
+                        <div id="step3-indicator" class="w-8 h-8 rounded-full bg-gray-300 text-white flex items-center justify-center font-bold">3</div>
+                        <span class="ml-2 font-medium">Approval</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Scan Instructions -->
+            <div id="step1" class="space-y-4">
+                <div class="bg-blue-50 border-l-4 border-blue-600 p-4">
+                    <h3 class="font-bold text-blue-900 mb-2">📋 Step 1: Run mcp-scan</h3>
+                    <p class="text-sm text-blue-800 mb-3">Run this command in your terminal:</p>
+                    <div class="bg-gray-900 rounded p-3 relative">
+                        <code class="text-green-400 text-sm">mcp-scan scan --config your-mcp-config.json --json > scan-results.json</code>
+                        <button onclick="copyCommand()" class="absolute right-2 top-2 bg-gray-800 hover:bg-gray-700 text-white text-xs px-2 py-1 rounded">📋 Copy</button>
+                    </div>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                    <p class="text-sm text-yellow-800"><strong>Don't have mcp-scan?</strong> Install it first:</p>
+                    <div class="bg-gray-900 rounded p-3 mt-2">
+                        <code class="text-green-400 text-sm">pip install mcp-scan</code>
+                    </div>
+                </div>
+
+                <button onclick="goToStep2()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium">
+                    ✅ I've run the scan → Next Step
+                </button>
+            </div>
+
+            <!-- Step 2: Upload Results -->
+            <div id="step2" class="hidden space-y-4">
+                <div class="bg-green-50 border-l-4 border-green-600 p-4">
+                    <h3 class="font-bold text-green-900 mb-2">📤 Step 2: Upload Scan Results</h3>
+                    <p class="text-sm text-green-800">Paste the JSON output from scan-results.json below:</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Server Name</label>
+                    <input type="text" id="serverName" placeholder="e.g., My Weather Tool" 
+                           class="w-full px-3 py-2 border rounded-lg">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Scan Results JSON</label>
+                    <textarea id="scanJson" rows="10" 
+                              class="w-full px-3 py-2 border rounded-lg font-mono text-sm"
+                              placeholder='Paste your scan-results.json content here...'></textarea>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="goToStep1()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
+                        ← Back
+                    </button>
+                    <button onclick="uploadScan()" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-medium">
+                        🚀 Upload & Request Approval
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Awaiting Approval -->
+            <div id="step3" class="hidden space-y-4">
+                <div class="text-center py-8">
+                    <div class="text-6xl mb-4">⏳</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Scan Uploaded Successfully!</h3>
+                    <p class="text-gray-600 mb-6">Your scan results are being reviewed by an administrator.</p>
+                    
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <div class="grid grid-cols-2 gap-4 text-left">
+                            <div>
+                                <label class="text-sm text-gray-500">Server ID</label>
+                                <p id="result-server-id" class="font-mono text-sm font-bold">-</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Status</label>
+                                <p id="result-status" class="font-bold">-</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Risk Score</label>
+                                <p id="result-risk" class="font-bold">-</p>
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-500">Tools Detected</label>
+                                <p id="result-tools" class="font-bold">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button onclick="checkStatus()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium">
+                            🔄 Refresh Status
+                        </button>
+                        <button onclick="goToStep1()" class="w-full border py-3 rounded-lg hover:bg-gray-50">
+                            ➕ Upload Another Server
+                        </button>
+                        <a href="index.html" class="block w-full bg-gray-800 text-white text-center py-3 rounded-lg hover:bg-gray-900">
+                            📊 Go to Admin Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity"></div>
+
+    <script>
+        const API_URL = 'http://localhost:8080'; // Change this to your gateway URL
+        let currentServerId = null;
+
+        function goToStep1() {
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            updateIndicator(1);
+        }
+
+        function goToStep2() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            updateIndicator(2);
+        }
+
+        function goToStep3() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+            updateIndicator(3);
+        }
+
+        function updateIndicator(step) {
+            for (let i = 1; i <= 3; i++) {
+                const indicator = document.getElementById(`step${i}-indicator`);
+                if (i <= step) {
+                    indicator.classList.remove('bg-gray-300');
+                    indicator.classList.add('bg-blue-600');
+                } else {
+                    indicator.classList.remove('bg-blue-600');
+                    indicator.classList.add('bg-gray-300');
+                }
+            }
+        }
+
+        function copyCommand() {
+            navigator.clipboard.writeText('mcp-scan scan --config your-mcp-config.json --json > scan-results.json');
+            showToast('✅ Command copied to clipboard!');
+        }
+
+        async function uploadScan() {
+            const serverName = document.getElementById('serverName').value.trim();
+            const scanJson = document.getElementById('scanJson').value.trim();
+
+            if (!serverName) {
+                showToast('❌ Please enter a server name', 'error');
+                return;
+            }
+
+            if (!scanJson) {
+                showToast('❌ Please paste scan results', 'error');
+                return;
+            }
+
+            let scanData;
+            try {
+                scanData = JSON.parse(scanJson);
+            } catch (e) {
+                showToast('❌ Invalid JSON. Please check your scan results.', 'error');
+                return;
+            }
+
+            try {
+                // Step 1: Register server
+                showToast('⏳ Registering server...', 'info');
+                const registerResponse = await fetch(`${API_URL}/registry/servers`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: serverName,
+                        canonicalId: serverName.toLowerCase().replace(/\s+/g, '-'),
+                        ownerTeam: 'default',
+                        sourceType: 'LocalDeclared'
+                    })
+                });
+
+                if (!registerResponse.ok) {
+                    throw new Error('Server registration failed');
+                }
+
+                const server = await registerResponse.json();
+                currentServerId = server.id;
+
+                // Step 2: Upload scan
+                showToast('⏳ Uploading scan results...', 'info');
+                const uploadResponse = await fetch(`${API_URL}/scan/upload?server_id=${server.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: scanJson
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Scan upload failed');
+                }
+
+                const result = await uploadResponse.json();
+
+                // Display results
+                document.getElementById('result-server-id').textContent = server.id;
+                document.getElementById('result-status').textContent = result.status || 'Pending Review';
+                document.getElementById('result-risk').textContent = result.riskScore ? (result.riskScore * 100).toFixed(1) + '%' : 'N/A';
+                
+                const toolCount = scanData.servers?.[0]?.signature?.tools?.length || 0;
+                document.getElementById('result-tools').textContent = toolCount;
+
+                showToast('✅ Upload successful!', 'success');
+                goToStep3();
+            } catch (error) {
+                showToast('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function checkStatus() {
+            if (!currentServerId) return;
+
+            try {
+                const response = await fetch(`${API_URL}/registry/servers/${currentServerId}`);
+                const server = await response.json();
+                
+                document.getElementById('result-status').textContent = server.status;
+                
+                if (server.status === 'Approved') {
+                    showToast('✅ Server approved! You can now use it.', 'success');
+                } else if (server.status === 'Rejected') {
+                    showToast('❌ Server was rejected. Check with admin.', 'error');
+                } else {
+                    showToast('⏳ Still pending review...', 'info');
+                }
+            } catch (error) {
+                showToast('❌ Error checking status', 'error');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden', 'bg-gray-800', 'bg-red-600', 'bg-green-600', 'bg-blue-600');
+            
+            if (type === 'error') toast.classList.add('bg-red-600');
+            else if (type === 'success') toast.classList.add('bg-green-600');
+            else if (type === 'info') toast.classList.add('bg-blue-600');
+            else toast.classList.add('bg-gray-800');
+            
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+    </script>
+</body>
+</html>
