@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 280">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00796B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#26A69A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueBox" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BBDEFB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenBox" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8F5E9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C8E6C9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleBox" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F3E5F5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E1BEE7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeBox" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF3E0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFE0B2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="tealBox" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E0F2F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B2DFDB;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#666"/>
+    </marker>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="750" height="280" fill="#FAFAFA"/>
+  
+  <!-- Header -->
+  <rect x="225" y="10" width="300" height="35" rx="6" fill="url(#headerGrad)" filter="url(#shadow)"/>
+  <text x="375" y="34" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="16" font-weight="bold">🔍 MCP SCANNING PROCESS</text>
+  
+  <!-- Step 1: Config -->
+  <rect x="20" y="70" width="90" height="70" rx="8" fill="url(#blueBox)" stroke="#1976D2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="65" y="100" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">📁</text>
+  <text x="65" y="118" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Your MCP</text>
+  <text x="65" y="130" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Config</text>
+  
+  <!-- Arrow 1 -->
+  <line x1="110" y1="105" x2="135" y2="105" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 2: mcp-scan -->
+  <rect x="140" y="70" width="90" height="70" rx="8" fill="url(#greenBox)" stroke="#388E3C" stroke-width="2" filter="url(#shadow)"/>
+  <text x="185" y="100" text-anchor="middle" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">🔧</text>
+  <text x="185" y="118" text-anchor="middle" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">mcp-scan</text>
+  <text x="185" y="130" text-anchor="middle" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">tool</text>
+  
+  <!-- Arrow 2 -->
+  <line x1="230" y1="105" x2="255" y2="105" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 3: Connect -->
+  <rect x="260" y="70" width="90" height="70" rx="8" fill="url(#purpleBox)" stroke="#7B1FA2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="305" y="100" text-anchor="middle" fill="#6A1B9A" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">🔌</text>
+  <text x="305" y="118" text-anchor="middle" fill="#6A1B9A" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Connects to</text>
+  <text x="305" y="130" text-anchor="middle" fill="#6A1B9A" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">MCP Server</text>
+  
+  <!-- Arrow 3 -->
+  <line x1="350" y1="105" x2="375" y2="105" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 4: Enumerate -->
+  <rect x="380" y="70" width="90" height="70" rx="8" fill="url(#orangeBox)" stroke="#FB8C00" stroke-width="2" filter="url(#shadow)"/>
+  <text x="425" y="100" text-anchor="middle" fill="#E65100" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">📋</text>
+  <text x="425" y="118" text-anchor="middle" fill="#E65100" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Enumerates</text>
+  <text x="425" y="130" text-anchor="middle" fill="#E65100" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Tools/Prompts</text>
+  
+  <!-- Arrow 4 -->
+  <line x1="470" y1="105" x2="495" y2="105" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 5: Report -->
+  <rect x="500" y="70" width="90" height="70" rx="8" fill="url(#tealBox)" stroke="#00796B" stroke-width="2" filter="url(#shadow)"/>
+  <text x="545" y="100" text-anchor="middle" fill="#00695C" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">📊</text>
+  <text x="545" y="118" text-anchor="middle" fill="#00695C" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Generates</text>
+  <text x="545" y="130" text-anchor="middle" fill="#00695C" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Report</text>
+  
+  <!-- Arrow 5 -->
+  <line x1="590" y1="105" x2="615" y2="105" stroke="#666" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Step 6: Upload -->
+  <rect x="620" y="70" width="100" height="70" rx="8" fill="url(#blueBox)" stroke="#1976D2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="670" y="100" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">📤</text>
+  <text x="670" y="118" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Upload to</text>
+  <text x="670" y="130" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">Portal</text>
+  
+  <!-- Details section -->
+  <rect x="20" y="160" width="710" height="105" rx="8" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- What gets scanned -->
+  <text x="40" y="185" fill="#333" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">📋 What Gets Scanned:</text>
+  
+  <rect x="40" y="195" width="100" height="25" rx="4" fill="#E8F5E9"/>
+  <text x="90" y="212" text-anchor="middle" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="11">🔧 Tools</text>
+  
+  <rect x="150" y="195" width="100" height="25" rx="4" fill="#E3F2FD"/>
+  <text x="200" y="212" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="11">💬 Prompts</text>
+  
+  <rect x="260" y="195" width="100" height="25" rx="4" fill="#F3E5F5"/>
+  <text x="310" y="212" text-anchor="middle" fill="#6A1B9A" font-family="Segoe UI, Arial" font-size="11">📂 Resources</text>
+  
+  <rect x="370" y="195" width="110" height="25" rx="4" fill="#FFF3E0"/>
+  <text x="425" y="212" text-anchor="middle" fill="#E65100" font-family="Segoe UI, Arial" font-size="11">ℹ️ Server Info</text>
+  
+  <!-- Command example -->
+  <text x="40" y="245" fill="#333" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">💻 Command:</text>
+  <rect x="120" y="230" width="500" height="25" rx="4" fill="#263238"/>
+  <text x="130" y="247" fill="#4CAF50" font-family="Courier New, monospace" font-size="11">mcp-scan inspect --config-path ~/.cursor/mcp.json --json &gt; results.json</text>
+</svg>

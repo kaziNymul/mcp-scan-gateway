@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 500">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1976D2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42A5F5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="blueSection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#BBDEFB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenSection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8F5E9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#C8E6C9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redSection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEBEE;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFCDD2;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="700" height="500" fill="#FAFAFA" rx="12"/>
+  <rect x="10" y="10" width="680" height="480" fill="white" rx="10" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- Header -->
+  <rect x="20" y="20" width="660" height="55" rx="8" fill="url(#headerGrad)" filter="url(#shadow)"/>
+  <text x="350" y="55" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="24" font-weight="bold">📋 MCP QUICK REFERENCE</text>
+  
+  <!-- Important Links Section -->
+  <rect x="30" y="90" width="640" height="100" rx="8" fill="url(#blueSection)" stroke="#1976D2" stroke-width="1" filter="url(#shadow)"/>
+  <text x="50" y="115" fill="#1565C0" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">🔗 IMPORTANT LINKS</text>
+  
+  <text x="50" y="145" fill="#333" font-family="Segoe UI, Arial" font-size="13">
+    <tspan font-weight="bold">🌐 Scan Portal:</tspan>
+    <tspan fill="#1976D2"> https://mcp-gateway.yourcompany.com</tspan>
+  </text>
+  <text x="50" y="168" fill="#333" font-family="Segoe UI, Arial" font-size="13">
+    <tspan font-weight="bold">📧 Security Team:</tspan>
+    <tspan fill="#1976D2"> security@example.com</tspan>
+  </text>
+  <text x="400" y="145" fill="#333" font-family="Segoe UI, Arial" font-size="13">
+    <tspan font-weight="bold">🎫 New MCP Request (Jira):</tspan>
+  </text>
+  <text x="400" y="168" fill="#1976D2" font-family="Segoe UI, Arial" font-size="12">https://jira.yourcompany.com/create?project=MCP</text>
+  
+  <!-- Before Using Section -->
+  <rect x="30" y="200" width="640" height="120" rx="8" fill="url(#greenSection)" stroke="#43A047" stroke-width="1" filter="url(#shadow)"/>
+  <text x="50" y="225" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">✅ BEFORE USING ANY MCP SERVER</text>
+  
+  <!-- Step 1 -->
+  <rect x="50" y="240" width="30" height="30" rx="15" fill="#43A047"/>
+  <text x="65" y="262" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">1</text>
+  <text x="90" y="260" fill="#333" font-family="Courier New, monospace" font-size="12">mcp-scan inspect --config-path &lt;config&gt; --json &gt; results.json</text>
+  
+  <!-- Step 2 -->
+  <rect x="50" y="275" width="30" height="30" rx="15" fill="#43A047"/>
+  <text x="65" y="297" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">2</text>
+  <text x="90" y="295" fill="#333" font-family="Segoe UI, Arial" font-size="13">Upload results to <tspan fill="#1976D2" font-weight="bold">https://mcp-gateway.yourcompany.com/upload</tspan></text>
+  
+  <!-- Step 3 -->
+  <rect x="420" y="240" width="30" height="30" rx="15" fill="#43A047"/>
+  <text x="435" y="262" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">3</text>
+  <text x="460" y="260" fill="#333" font-family="Segoe UI, Arial" font-size="13">Wait for approval notification</text>
+  
+  <!-- Never Section -->
+  <rect x="30" y="330" width="640" height="150" rx="8" fill="url(#redSection)" stroke="#E53935" stroke-width="1" filter="url(#shadow)"/>
+  <text x="50" y="355" fill="#C62828" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">⛔ NEVER DO THIS</text>
+  
+  <!-- Never items -->
+  <g fill="#C62828" font-family="Segoe UI, Arial" font-size="13">
+    <text x="50" y="385">❌ Use MCP with <tspan font-weight="bold">production systems</tspan></text>
+    <text x="50" y="410">❌ Run MCP with <tspan font-weight="bold">sudo/admin privileges</tspan></text>
+    <text x="50" y="435">❌ Send <tspan font-weight="bold">PII (Personal Data)</tspan> to LLMs via MCP</text>
+    <text x="50" y="460">❌ Download MCP binaries from <tspan font-weight="bold">unknown/untrusted sources</tspan></text>
+    
+    <text x="400" y="385">❌ Access <tspan font-weight="bold">credentials or secrets</tspan></text>
+    <text x="400" y="410">❌ Bypass the <tspan font-weight="bold">scanning process</tspan></text>
+    <text x="400" y="435">❌ Share MCP configs with <tspan font-weight="bold">API keys</tspan></text>
+  </g>
+</svg>

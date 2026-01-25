@@ -65,6 +65,8 @@ This guideline applies to:
 
 ### ⚠️ Why MCP Requires Governance
 
+![MCP Security Risks Overview](images/mcp-security-risks.svg)
+
 MCP servers are powerful but dangerous. When you install an MCP server, you are:
 
 1. **Granting code execution** - The MCP server runs with YOUR privileges
@@ -189,6 +191,8 @@ These sources require **mandatory security scanning** and **explicit approval**:
 **ALL MCP servers must be scanned before use, regardless of source.**
 
 ConsecTech provides an internal MCP scanning service that analyzes MCP servers for security vulnerabilities without sending data to external services.
+
+![MCP Scanning Process](images/mcp-scanning-process.svg)
 
 ### Scanning Portal
 
@@ -411,81 +415,17 @@ The following require explicit approval from Security team:
 
 ## 9. Approval Workflow
 
-### Request Process
+### MCP Server Approval Process
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           MCP APPROVAL WORKFLOW                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
+Use this workflow to get approval for using an **existing** MCP server from approved sources.
 
-     ┌──────────────────┐
-     │  Developer wants │
-     │  to use MCP      │
-     └────────┬─────────┘
-              │
-              ▼
-     ┌──────────────────┐
-     │  Run mcp-scan    │
-     │  on the server   │
-     └────────┬─────────┘
-              │
-              ▼
-     ┌──────────────────┐
-     │  Upload results  │
-     │  to portal       │
-     └────────┬─────────┘
-              │
-              ▼
-     ┌──────────────────┐
-     │  Create Jira     │◄──── https://jira.yourcompany.com/create?project=MCP
-     │  ticket          │
-     └────────┬─────────┘
-              │
-              ▼
-     ┌──────────────────┐
-     │  GitHub Copilot  │
-     │  Team reviews    │──── SLA: 48 business hours
-     └────────┬─────────┘
-              │
-        ┌─────┴─────┐
-        │           │
-        ▼           ▼
-   ┌─────────┐ ┌─────────┐
-   │Approved │ │Rejected │
-   └────┬────┘ └────┬────┘
-        │           │
-        ▼           ▼
-   ┌─────────┐ ┌─────────────────┐
-   │  Use    │ │ Fix issues &    │
-   │  MCP    │ │ resubmit or     │
-   └─────────┘ │ request exception│
-               └─────────────────┘
-```
+![MCP Approval Workflow](images/mcp-approval-workflow.svg)
 
-### Jira Ticket Requirements
+### New MCP Server Request Process
 
-Create a Jira ticket at: **https://jira.yourcompany.com/create?project=MCP**
+If you need an MCP server that **doesn't exist** or need a **custom MCP server** built, create a Jira ticket:
 
-Include the following information:
-
-```
-Project: MCP
-Issue Type: MCP Server Request
-Summary: [MCP Server Name] - [Brief Description]
-
-Description:
-1. MCP Server Name: 
-2. Source URL/Package: 
-3. Version: 
-4. Business Justification: 
-5. Tools Used: 
-6. Data Accessed: 
-7. Scan Result Upload ID: 
-8. Risk Acknowledgment: I have read and understand the MCP Usage Guideline
-
-Attachments:
-- scan_results.json
-```
+![New MCP Server Request](images/mcp-new-server-request.svg)
 
 ### Approval Authorities
 
@@ -511,10 +451,10 @@ Attachments:
 
 If your request is rejected:
 
-1. Review the rejection reason in Jira
-2. Address the identified issues
-3. Re-scan and re-submit
-4. If still rejected, request exception via Jira with business justification
+1. Review the rejection feedback in the approval portal
+2. Address the identified issues if possible
+3. Re-scan and re-submit through the portal
+4. If issues cannot be resolved, create a Jira exception request
 5. Exceptions require CISO approval
 
 ---
@@ -725,31 +665,7 @@ Report immediately if you observe:
 
 ### A. Quick Reference Card
 
-```
-╔══════════════════════════════════════════════════════════════════╗
-║                    MCP QUICK REFERENCE                           ║
-╠══════════════════════════════════════════════════════════════════╣
-║                                                                  ║
-║  🔗 SCAN PORTAL: https://mcp-gateway.yourcompany.com/scan        ║
-║  📧 SECURITY:    security@example.com                            ║
-║  🎫 JIRA:        https://jira.yourcompany.com/create?project=MCP ║
-║                                                                  ║
-║  ─────────────────────────────────────────────────────────────── ║
-║  BEFORE USING ANY MCP SERVER:                                    ║
-║                                                                  ║
-║  1. mcp-scan inspect --config-path <config> --json > results.json║
-║  2. Upload results to https://mcp-gateway.yourcompany.com/upload ║
-║  3. Create Jira ticket and wait for approval                     ║
-║                                                                  ║
-║  ─────────────────────────────────────────────────────────────── ║
-║  ⛔ NEVER:                                                        ║
-║     • Use MCP with production systems                            ║
-║     • Run MCP with sudo/admin privileges                         ║
-║     • Send PII to LLMs via MCP tools                             ║
-║     • Download MCP binaries from unknown sources                 ║
-║                                                                  ║
-╚══════════════════════════════════════════════════════════════════╝
-```
+![MCP Quick Reference](images/mcp-quick-reference.svg)
 
 ### B. Approved Scanner Commands
 

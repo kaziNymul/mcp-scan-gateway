@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1976D2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#42A5F5;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#43A047;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#66BB6A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E53935;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EF5350;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="yellowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FB8C00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA726;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="#FAFAFA"/>
+  
+  <!-- Header -->
+  <rect x="50" y="20" width="700" height="50" rx="8" fill="url(#headerGrad)" filter="url(#shadow)"/>
+  <text x="400" y="52" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="20" font-weight="bold">🔐 MCP APPROVAL WORKFLOW</text>
+  
+  <!-- Step 1: Developer wants to use MCP -->
+  <rect x="300" y="90" width="200" height="50" rx="8" fill="#E3F2FD" stroke="#1976D2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="400" y="120" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">🧑‍💻 Developer wants to</text>
+  <text x="400" y="135" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">use MCP Server</text>
+  
+  <!-- Arrow 1 -->
+  <path d="M400 140 L400 160" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <polygon points="400,170 395,160 405,160" fill="#666"/>
+  
+  <!-- Step 2: Check Source Tier -->
+  <rect x="280" y="175" width="240" height="45" rx="8" fill="#FFF3E0" stroke="#FB8C00" stroke-width="2" filter="url(#shadow)"/>
+  <text x="400" y="203" text-anchor="middle" fill="#E65100" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">📋 Check if from Approved Source</text>
+  
+  <!-- Arrow 2 -->
+  <path d="M400 220 L400 245" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="400,255 395,245 405,245" fill="#666"/>
+  
+  <!-- Decision Diamond -->
+  <polygon points="400,260 480,295 400,330 320,295" fill="#FFF9C4" stroke="#F9A825" stroke-width="2" filter="url(#shadow)"/>
+  <text x="400" y="300" text-anchor="middle" fill="#F57F17" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">Source Tier?</text>
+  
+  <!-- Tier 1 Branch (Left) -->
+  <path d="M320 295 L200 295" stroke="#43A047" stroke-width="2" fill="none"/>
+  <polygon points="190,295 200,290 200,300" fill="#43A047"/>
+  <text x="260" y="285" text-anchor="middle" fill="#43A047" font-family="Segoe UI, Arial" font-size="11" font-weight="bold">Tier 1</text>
+  
+  <rect x="80" y="270" width="120" height="50" rx="8" fill="url(#greenGrad)" filter="url(#shadow)"/>
+  <text x="140" y="300" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">✅ Auto-</text>
+  <text x="140" y="315" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">Approved</text>
+  
+  <!-- Tier 2/3 Branch (Right) -->
+  <path d="M480 295 L560 295 L560 345" stroke="#1976D2" stroke-width="2" fill="none"/>
+  <polygon points="560,355 555,345 565,345" fill="#1976D2"/>
+  <text x="520" y="285" text-anchor="middle" fill="#1976D2" font-family="Segoe UI, Arial" font-size="11" font-weight="bold">Tier 2/3</text>
+  
+  <!-- Step 3: Run mcp-scan -->
+  <rect x="460" y="360" width="200" height="45" rx="8" fill="#E8F5E9" stroke="#43A047" stroke-width="2" filter="url(#shadow)"/>
+  <text x="560" y="388" text-anchor="middle" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">🔍 Run mcp-scan</text>
+  
+  <!-- Arrow to Upload -->
+  <path d="M560 405 L560 430" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="560,440 555,430 565,430" fill="#666"/>
+  
+  <!-- Step 4: Upload Results -->
+  <rect x="460" y="445" width="200" height="45" rx="8" fill="#E3F2FD" stroke="#1976D2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="560" y="473" text-anchor="middle" fill="#1565C0" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">📤 Upload to Portal</text>
+  
+  <!-- Arrow to Review -->
+  <path d="M460 468 L340 468" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="330,468 340,463 340,473" fill="#666"/>
+  
+  <!-- Step 5: Review -->
+  <rect x="180" y="445" width="150" height="45" rx="8" fill="#FFF3E0" stroke="#FB8C00" stroke-width="2" filter="url(#shadow)"/>
+  <text x="255" y="465" text-anchor="middle" fill="#E65100" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">⏳ GitHub Copilot</text>
+  <text x="255" y="480" text-anchor="middle" fill="#E65100" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">Team Reviews</text>
+  
+  <!-- Arrow to Decision 2 -->
+  <path d="M255 490 L255 515" stroke="#666" stroke-width="2" fill="none"/>
+  <polygon points="255,525 250,515 260,515" fill="#666"/>
+  
+  <!-- Decision 2 Diamond -->
+  <polygon points="255,530 315,555 255,580 195,555" fill="#FFF9C4" stroke="#F9A825" stroke-width="2" filter="url(#shadow)"/>
+  <text x="255" y="560" text-anchor="middle" fill="#F57F17" font-family="Segoe UI, Arial" font-size="11" font-weight="bold">Decision</text>
+  
+  <!-- Approved Branch -->
+  <path d="M195 555 L140 555 L140 380" stroke="#43A047" stroke-width="2" fill="none"/>
+  <polygon points="140,370 135,380 145,380" fill="#43A047"/>
+  <text x="167" y="545" text-anchor="middle" fill="#43A047" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">✅</text>
+  
+  <!-- Final Approved Box -->
+  <rect x="80" y="340" width="120" height="40" rx="8" fill="url(#greenGrad)" filter="url(#shadow)"/>
+  <text x="140" y="365" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="13" font-weight="bold">🎉 Use MCP</text>
+  
+  <!-- Rejected Branch -->
+  <path d="M315 555 L400 555" stroke="#E53935" stroke-width="2" fill="none"/>
+  <polygon points="410,555 400,550 400,560" fill="#E53935"/>
+  <text x="357" y="545" text-anchor="middle" fill="#E53935" font-family="Segoe UI, Arial" font-size="10" font-weight="bold">❌</text>
+  
+  <!-- Rejected Box -->
+  <rect x="415" y="530" width="140" height="50" rx="8" fill="url(#redGrad)" filter="url(#shadow)"/>
+  <text x="485" y="550" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">📝 Review</text>
+  <text x="485" y="567" text-anchor="middle" fill="white" font-family="Segoe UI, Arial" font-size="12" font-weight="bold">Feedback</text>
+  
+  <!-- Resubmit Arrow -->
+  <path d="M555 555 L620 555 L620 383 L560 383" stroke="#666" stroke-width="2" stroke-dasharray="5,3" fill="none"/>
+  <polygon points="560,383 570,378 570,388" fill="#666"/>
+  <text x="620" y="470" text-anchor="middle" fill="#666" font-family="Segoe UI, Arial" font-size="10" transform="rotate(-90 620,470)">Fix &amp; Retry</text>
+</svg>
