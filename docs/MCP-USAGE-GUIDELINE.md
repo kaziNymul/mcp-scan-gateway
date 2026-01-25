@@ -33,6 +33,23 @@ This guideline establishes security requirements and best practices for using Mo
 
 **This guideline is MANDATORY for all employees using MCP servers with any AI assistant (GitHub Copilot, Cursor, Claude Desktop, VS Code, etc.).**
 
+### 1.1 User Responsibility
+
+> **⚠️ IMPORTANT: Any violation of MCP policies outlined in this guideline is the SOLE RESPONSIBILITY of the user who installs, configures, or uses the MCP server.**
+
+By using any MCP server, you acknowledge and accept that:
+
+| Responsibility | Description |
+|---------------|-------------|
+| **Policy Compliance** | You are responsible for ensuring the MCP server complies with all policies in this guideline |
+| **Security Scanning** | You are responsible for scanning MCP servers before use and uploading results for approval |
+| **Data Protection** | You are responsible for ensuring no PII, credentials, or sensitive data is exposed to LLMs |
+| **Source Verification** | You are responsible for verifying the MCP server comes from an approved/trusted source |
+| **Incident Reporting** | You are responsible for immediately reporting any suspicious MCP behavior |
+| **Consequences** | Violations may result in disciplinary action, including termination, as per company policy |
+
+**Ignorance of this policy is not an excuse.** All employees must read and understand this guideline before using any MCP server.
+
 ---
 
 ## 2. Scope
