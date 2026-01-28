@@ -48,7 +48,7 @@
   
   <!-- Before Using Section -->
   <rect x="30" y="200" width="640" height="120" rx="8" fill="url(#greenSection)" stroke="#43A047" stroke-width="1" filter="url(#shadow)"/>
-  <text x="50" y="225" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">✅ BEFORE USING ANY MCP SERVER</text>
+  <text x="50" y="225" fill="#2E7D32" font-family="Segoe UI, Arial" font-size="14" font-weight="bold">✅ BEFORE USING ANY MCP SERVER (ALL TIERS - NO EXCEPTIONS)</text>
   
   <!-- Step 1 -->
   <rect x="50" y="240" width="30" height="30" rx="15" fill="#43A047"/>

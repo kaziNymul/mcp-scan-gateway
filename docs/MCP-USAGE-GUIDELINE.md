@@ -42,7 +42,7 @@ By using any MCP server, you acknowledge and accept that:
 | Responsibility | Description |
 |---------------|-------------|
 | **Policy Compliance** | You are responsible for ensuring the MCP server complies with all policies in this guideline |
-| **Security Scanning** | You are responsible for scanning MCP servers before use and uploading results for approval |
+| **Mandatory Scanning** | You are responsible for scanning **ALL MCP servers (Tier 1, 2, or 3)** before use and uploading results for approval |
 | **Data Protection** | You are responsible for ensuring no PII, credentials, or sensitive data is exposed to LLMs |
 | **Source Verification** | You are responsible for verifying the MCP server comes from an approved/trusted source |
 | **Incident Reporting** | You are responsible for immediately reporting any suspicious MCP behavior |
@@ -70,7 +70,7 @@ This guideline applies to:
 | **MCP** | Model Context Protocol - An open standard for connecting AI assistants to external tools and data sources |
 | **MCP Server** | A program that exposes tools, prompts, and resources to AI assistants via the MCP protocol |
 | **stdio MCP** | MCP server running locally, spawned as a subprocess (e.g., `npx`, `uvx`, `python`) |
-| **SSE/HTTP MCP** | MCP server running remotely, accessed via HTTP/Server-Sent Events |
+| **SSE/HTTP MCP** | MCP server accessed via HTTP/Server-Sent Events transport (can be local or remote) |
 | **Tool** | A function exposed by an MCP server that an AI assistant can invoke |
 | **Prompt Injection** | An attack where malicious content tricks the AI into performing unintended actions |
 | **Tool Poisoning** | An attack where malicious tool descriptions manipulate AI behavior |
@@ -102,6 +102,44 @@ MCP servers are powerful but dangerous. When you install an MCP server, you are:
 | **Rug Pull Attack** | Tool behavior changes after initial approval | 🟡 High |
 | **Cross-Origin Escalation** | One MCP server manipulating another | 🟡 High |
 
+### Risk Level Classification
+
+#### 🔴 Critical Risk - Immediate, Direct Impact
+
+| Attack | Why Critical |
+|--------|--------------|
+| **Tool Poisoning** | Direct attack vector - malicious code is embedded in the tool itself, executes immediately upon use |
+| **Prompt Injection** | Bypasses user intent - AI performs actions without user awareness or consent |
+| **Data Exfiltration** | Immediate data loss - sensitive information leaves the organization in real-time |
+| **Supply Chain Attack** | Pre-compromised code - malware is active from the moment of installation |
+| **Privilege Escalation** | System-level compromise - attacker gains admin/root access, can control entire machine |
+
+**Characteristics of Critical risks:**
+- ⚡ **Immediate impact** upon execution
+- 🎯 **Direct attack path** (no intermediate steps needed)
+- 💥 **High damage potential** (data loss, system compromise)
+- 🔓 **Difficult to detect** before damage occurs
+
+#### 🟡 High Risk - Delayed or Conditional Impact
+
+| Attack | Why High (not Critical) |
+|--------|-------------------------|
+| **Rug Pull Attack** | Delayed threat - tool behaves normally initially, malicious behavior appears later after updates. Requires attacker to maintain access and push changes |
+| **Cross-Origin Escalation** | Requires preconditions - needs multiple MCP servers installed, attacker must exploit trust relationships between servers |
+
+**Characteristics of High risks:**
+- ⏰ **Delayed or conditional** execution
+- 🔗 **Requires multiple steps** or preconditions to exploit
+- 🛡️ **Can be mitigated** with monitoring and version pinning
+- 📊 **Detectable** with proper audit controls
+
+#### Risk Level Comparison
+
+| Risk Level | Exploitability | Time to Impact | Detection Difficulty |
+|------------|----------------|----------------|---------------------|
+| 🔴 Critical | Easy - single action triggers | Immediate | Very Hard |
+| 🟡 High | Moderate - requires setup | Delayed | Moderate |
+
 ### Real-World Attack Examples
 
 ```bash
@@ -127,28 +165,30 @@ npx @mcp/filesytem  # Note: typo in "filesystem"
 
 ## 5. Approved Sources & Marketplaces
 
-### 🟢 Tier 1: Verified & Trusted Sources
+> ⚠️ **IMPORTANT: ALL MCP servers from ANY tier MUST be scanned before use.** The tier classification determines the review process speed, not whether scanning is required.
 
-These sources have organizational verification and are considered lowest risk:
+### 🟢 Tier 1: Verified Sources (Expedited Review)
 
-| Source | URL | Package Type | Verification |
-|--------|-----|--------------|--------------|
-| **Anthropic Official** | github.com/anthropics/mcp-servers | Reference implementations | ✅ Verified publisher |
-| **Microsoft Official** | github.com/microsoft/* | Official tools | ✅ Verified publisher |
-| **OpenAI Official** | github.com/openai/* | Official tools | ✅ Verified publisher |
-| **ConsecTech Artifactory** | artifactory.yourcompany.com | Internal packages | ✅ Internal review |
-| **GitHub Marketplace (Verified)** | github.com/marketplace | Verified publishers only | ✅ GitHub verified |
+These sources have organizational verification. **Scanning is still MANDATORY**, but approval is expedited:
 
-### 🟡 Tier 2: Trusted with Scanning Required
+| Source | URL | Package Type | Verification | Scan Required |
+|--------|-----|--------------|--------------|---------------|
+| **MCP Official (Linux Foundation)** | github.com/modelcontextprotocol/servers | Reference implementations | ✅ Verified organization | ✅ Yes |
+| **Microsoft Official** | github.com/microsoft/* | Official tools | ✅ Verified publisher | ✅ Yes |
+| **OpenAI Official** | github.com/openai/* | Official tools | ✅ Verified publisher | ✅ Yes |
+| **ConsecTech Artifactory** | artifactory.yourcompany.com | Internal packages | ✅ Internal review | ✅ Yes |
+| **GitHub MCP Registry** | github.com/mcp | Curated MCP servers | ✅ GitHub verified | ✅ Yes |
 
-These sources are generally trusted but REQUIRE security scanning before use:
+### 🟡 Tier 2: Trusted Sources (Standard Review)
 
-| Source | URL | Notes |
-|--------|-----|-------|
-| **npm (npmjs.com)** | npmjs.com | Only packages with 10k+ weekly downloads, verified publishers |
-| **PyPI (pypi.org)** | pypi.org | Only packages with verified maintainers, active development |
-| **Docker Hub Official** | hub.docker.com | Only Official Images and Verified Publishers |
-| **GitHub Releases** | github.com/*/releases | Only from organizations with 100+ stars, active maintenance |
+These sources are generally trusted. **Scanning is MANDATORY** with standard review timeline:
+
+| Source | URL | Notes | Scan Required |
+|--------|-----|-------|---------------|
+| **npm (npmjs.com)** | npmjs.com | Only packages with 10k+ weekly downloads, verified publishers | ✅ Yes |
+| **PyPI (pypi.org)** | pypi.org | Only packages with verified maintainers, active development | ✅ Yes |
+| **Docker Hub Official** | hub.docker.com | Only Official Images and Verified Publishers | ✅ Yes |
+| **GitHub Releases** | github.com/*/releases | Only from organizations with 100+ stars, active maintenance | ✅ Yes |
 
 #### npm Package Verification Checklist
 
@@ -172,20 +212,20 @@ Before using a PyPI MCP package:
 - [ ] Source code is publicly available
 - [ ] License is compatible
 
-### 🔴 Tier 3: Untrusted Sources (SCANNING MANDATORY)
+### 🔴 Tier 3: Untrusted Sources (Extended Review)
 
-These sources require **mandatory security scanning** and **explicit approval**:
+These sources are high-risk. **Scanning is MANDATORY** with extended review and additional security analysis:
 
-| Source | Risk Level | Requirements |
-|--------|------------|--------------|
-| **Random GitHub repos** | 🔴 High | Full scan + security review |
-| **npm packages < 1k downloads** | 🔴 High | Full scan + security review |
-| **PyPI packages < 500 downloads** | 🔴 High | Full scan + security review |
-| **Docker Hub community images** | 🔴 High | Full scan + security review |
-| **Smithery.ai** | 🟡 Medium | Full scan required |
-| **Glama.ai** | 🟡 Medium | Full scan required |
-| **mcp.so** | 🟡 Medium | Full scan required |
-| **Direct binary downloads** | 🔴 Critical | NOT ALLOWED without exception |
+| Source | Risk Level | Requirements | Scan Required |
+|--------|------------|--------------|---------------|
+| **Random GitHub repos** | 🔴 High | Full scan + security review | ✅ Yes |
+| **npm packages < 1k downloads** | 🔴 High | Full scan + security review | ✅ Yes |
+| **PyPI packages < 500 downloads** | 🔴 High | Full scan + security review | ✅ Yes |
+| **Docker Hub community images** | 🔴 High | Full scan + security review | ✅ Yes |
+| **Smithery.ai** | 🟡 Medium | Full scan required | ✅ Yes |
+| **Glama.ai** | 🟡 Medium | Full scan required | ✅ Yes |
+| **mcp.so** | 🟡 Medium | Full scan required | ✅ Yes |
+| **Direct binary downloads** | 🔴 Critical | NOT ALLOWED without exception | ❌ Prohibited |
 
 ### ❌ Prohibited Sources
 
@@ -205,7 +245,13 @@ These sources require **mandatory security scanning** and **explicit approval**:
 
 ### Overview
 
-**ALL MCP servers must be scanned before use, regardless of source.**
+> 🚨 **CRITICAL POLICY: ALL MCP servers must be scanned before use, regardless of source tier.**
+
+| Tier | Scan Required | Review Type | Typical Approval Time |
+|------|--------------|-------------|----------------------|
+| 🟢 **Tier 1** | ✅ **MANDATORY** | Expedited | 1-4 hours |
+| 🟡 **Tier 2** | ✅ **MANDATORY** | Standard | 1-2 business days |
+| 🔴 **Tier 3** | ✅ **MANDATORY** | Extended + Security Team | 3-5 business days |
 
 ConsecTech provides an internal MCP scanning service that analyzes MCP servers for security vulnerabilities without sending data to external services.
 
@@ -270,9 +316,9 @@ mcp-scan inspect --config-path ~/.vscode/mcp.json --json > scan_results.json
 
 | Category | Risk Level | Action Required |
 |----------|------------|-----------------|
-| **Clean** | 🟢 Low | May be auto-approved for Tier 1/2 sources |
-| **Warning** | 🟡 Medium | Manual review required |
-| **Critical** | 🔴 High | Security team review required |
+| **Clean** | 🟢 Low | Expedited approval for Tier 1, standard review for Tier 2/3 |
+| **Warning** | 🟡 Medium | Manual review required (all tiers) |
+| **Critical** | 🔴 High | Security team review required (all tiers) |
 | **Blocked** | ⛔ Prohibited | Cannot be approved without exception |
 
 ---
@@ -297,7 +343,7 @@ Developers MAY build MCP servers from source when:
 | **Microsoft** | github.com/microsoft/*, github.com/Azure/* | 🟢 Verified |
 | **OpenAI** | github.com/openai/* | 🟢 Verified |
 | **Google** | github.com/google/*, github.com/googleapis/* | 🟢 Verified |
-| **Meta** | github.com/facebook/*, github.com/meta/* | 🟢 Verified |
+| **Meta** | github.com/facebook/* | 🟢 Verified |
 | **ModelContextProtocol** | github.com/modelcontextprotocol/* | 🟢 Verified |
 | **Invariant Labs** | github.com/invariantlabs-ai/* | 🟢 Verified |
 | **ConsecTech Internal** | gitlab.yourcompany.com/* | 🟢 Verified |
@@ -446,9 +492,11 @@ If you need an MCP server that **doesn't exist** or need a **custom MCP server**
 
 ### Approval Authorities
 
+> ℹ️ **Note:** All approvals require a successful scan upload first. "Expedited" means faster review, not skipped review.
+
 | Scan Result | Source Tier | Approver |
 |-------------|-------------|----------|
-| Clean | Tier 1 (Verified) | Auto-approved |
+| Clean | Tier 1 (Verified) | Expedited (GitHub Copilot Team) |
 | Clean | Tier 2 (Trusted) | GitHub Copilot Team |
 | Clean | Tier 3 (Untrusted) | GitHub Copilot Team + Security |
 | Warning | Any | GitHub Copilot Team + Security |
@@ -459,10 +507,10 @@ If you need an MCP server that **doesn't exist** or need a **custom MCP server**
 
 | Request Type | SLA |
 |--------------|-----|
-| Tier 1 Clean | Immediate (auto-approved) |
-| Tier 2 Clean | 24 business hours |
-| Tier 3 or Warning | 48 business hours |
-| Critical/Exception | 5 business days |
+| Tier 1 Clean | 1-4 hours (expedited review) |
+| Tier 2 Clean | 1-2 business days |
+| Tier 3 or Warning | 3-5 business days |
+| Critical/Exception | 5-10 business days |
 
 ### Appeals Process
 
@@ -682,7 +730,47 @@ Report immediately if you observe:
 
 ### A. Quick Reference Card
 
-![MCP Quick Reference](images/mcp-quick-reference.svg)
+---
+
+#### 📋 MCP QUICK REFERENCE
+
+---
+
+**🔗 IMPORTANT LINKS**
+
+| Resource | URL |
+|----------|-----|
+| 🌐 **Scan Portal** | https://mcp-gateway.yourcompany.com |
+| 📧 **Security Team** | security@example.com |
+| 🎫 **New MCP Request (Jira)** | https://jira.yourcompany.com/create?project=MCP |
+
+> ⚠️ **Jira Portal:** Use this only when requesting a NEW MCP server that doesn't exist in the registry
+
+---
+
+**✅ BEFORE USING ANY MCP SERVER (ALL TIERS - NO EXCEPTIONS)**
+
+| Step | Action |
+|------|--------|
+| **1** | `mcp-scan inspect --config-path <config> --json > results.json` |
+| **2** | Upload results to **https://mcp-gateway.yourcompany.com/upload** |
+| **3** | Wait for approval notification |
+
+---
+
+**⛔ NEVER DO THIS**
+
+| ❌ Prohibited Action |
+|---------------------|
+| Use MCP with **production systems** |
+| Run MCP with **sudo/admin privileges** |
+| Send **PII (Personal Data)** to LLMs via MCP |
+| Download MCP binaries from **unknown/untrusted sources** |
+| Access **credentials or secrets** via MCP |
+| **Bypass the scanning process** |
+| Share MCP configs containing **API keys** |
+
+---
 
 ### B. Approved Scanner Commands
 
